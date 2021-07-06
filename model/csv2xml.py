@@ -1,8 +1,22 @@
 import csv
+import sys
+import argparse
+
+'''
+Example usage: python3 examples.csv converted-examples.xml
+'''
+parser = argparse.ArgumentParser(description='Convert CSV file to XML file.')
+parser.add_argument('input_file', metavar='N', type=str, nargs='+',
+                    help='The input CSV file.')
+parser.add_argument('output_file', metavar='N', type=str, nargs='+',
+                    help='The output XML file.')
+
+input_file = sys.argv[1]
+output_file = sys.argv[2]
 
 citations = []
 
-with open('Examples - Sheet1.csv',  encoding="utf-8") as csv_file:
+with open(input_file,  encoding="utf-8") as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
     column_names = []
@@ -34,5 +48,5 @@ for citation in citations:
 
 # create a new XML file with the results
 xmldata = ET.tostring(data)
-xmlfile = open("out.xml", "wb")
+xmlfile = open(output_file, "wb")
 xmlfile.write(xmldata)
