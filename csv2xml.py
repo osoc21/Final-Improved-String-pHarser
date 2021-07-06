@@ -28,7 +28,7 @@ for citation in citations:
     # For each field of the citation add a xml tag and set the text
     for field in citation:
         # No need to output the string field
-        if field != "String":
+        if field != "String" and citation[field] != "":
             item1 = ET.SubElement(items, field)
             item1.text = citation[field]
 
