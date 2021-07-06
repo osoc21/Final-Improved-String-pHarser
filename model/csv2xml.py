@@ -3,7 +3,7 @@ import sys
 import argparse
 
 '''
-Example usage: python3 examples.csv converted-examples.xml
+Example usage: python3 csv2xml.py examples.csv converted-examples.xml
 '''
 parser = argparse.ArgumentParser(description='Convert CSV file to XML file.')
 parser.add_argument('input_file', metavar='N', type=str, nargs='+',
