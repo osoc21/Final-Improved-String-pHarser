@@ -2,7 +2,7 @@ import csv
 
 citations = []
 
-with open('Examples - Sheet1.csv',  encoding="utf-8") as csv_file:
+with open('Examples - Sheet1-larger.csv',  encoding="utf-8") as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
     column_names = []
@@ -34,5 +34,5 @@ for citation in citations:
 
 # create a new XML file with the results
 xmldata = ET.tostring(data)
-xmlfile = open("out.xml", "wb")
+xmlfile = open("examples-larger.xml", "wb")
 xmlfile.write(xmldata)
