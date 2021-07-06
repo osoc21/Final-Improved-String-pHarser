@@ -27,8 +27,10 @@ for citation in citations:
     items = ET.SubElement(data, 'sequence')
     # For each field of the citation add a xml tag and set the text
     for field in citation:
-        item1 = ET.SubElement(items, field)
-        item1.text = citation[field]
+        # No need to output the string field
+        if field != "String":
+            item1 = ET.SubElement(items, field)
+            item1.text = citation[field]
 
 # create a new XML file with the results
 xmldata = ET.tostring(data)
