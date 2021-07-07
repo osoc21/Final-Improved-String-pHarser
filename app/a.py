@@ -99,10 +99,14 @@ def post_data():
 
   return render_template("index.html")'''
 
+try:
+  os.mkdir(temporary_folder)
+except FileExistsError:
+  pass
+
+"""
+Warning: Silently ignoring app.run() because the application is run from the flask command line executable. Consider putting 
+app.run() behind an if __name__ == "__main__" guard to silence this warning.
+"""
 if __name__ == '__main__':
-    try:
-        os.mkdir(temporary_folder)
-    except:
-        shutil.rmtree(temporary_folder)
-        os.mkdir(temporary_folder)
-api.run()
+  api.run()
