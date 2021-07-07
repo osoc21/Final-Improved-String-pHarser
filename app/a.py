@@ -78,6 +78,11 @@ def assets(path):
     return send_from_directory('assets', path)
 
 
+@api.route('/js/<path:path>')
+def js(path):
+  return send_from_directory('js', path)
+
+
 # Upload citation string
 '''@api.route('/', methods=['POST'])
 def post_data():
