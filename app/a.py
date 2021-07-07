@@ -5,12 +5,14 @@
 from flask import Flask, render_template, request
 import subprocess
 import os
+import shutil
 
 from flask.helpers import send_from_directory
 
 api = Flask(__name__)
 
 temporary_folder = "temp/"
+
 
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
@@ -41,15 +43,17 @@ def get_homepage():
 
         return render_template("index.html")
 
+
 # Serve CSS until it's handled by something else
 @api.route('/css/<path:path>')
 def css(path):
-  return send_from_directory('css', path)
+    return send_from_directory('css', path)
+
 
 # And the same for assets
 @api.route('/assets/<path:path>')
 def assets(path):
-  return send_from_directory('assets', path)
+    return send_from_directory('assets', path)
 
 
 # Upload citation string
@@ -70,5 +74,9 @@ def post_data():
   return render_template("index.html")'''
 
 if __name__ == '__main__':
-  os.mkdir(temporary_folder)
-  api.run()
+    try:
+        os.mkdir(temporary_folder)
+    except:
+        shutil.rmtree(temporary_folder)
+        os.mkdir(temporary_folder)
+api.run()
