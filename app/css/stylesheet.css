@@ -11,7 +11,7 @@ body {
     }
 }
 
-#crest {
+#crest:hover {
     transform: rotate(360deg);
     animation-name: rotatecrest;
     animation-duration: 5s;
@@ -95,6 +95,7 @@ body {
 
 .file-button span {
     color: white;
+    font-size: large;
 }
 
 .file-button input{
