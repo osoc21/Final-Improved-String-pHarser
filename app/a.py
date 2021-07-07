@@ -19,7 +19,7 @@ def get_homepage():
   if request.method == "GET":
     return render_template("index.html")
   elif request.method == "POST":
-    if request.files.get('filename'):
+    if request.files.get('file'):
       print("found file")
       f = request.files['file']
       print(f)
