@@ -12,9 +12,9 @@
 </div>
 </div>
 
-
-<form method="POST">
-  <input type="file" id="file" name="filename">
+<!-- Flask requires that you use encoding type multipart/form-data for file uploads! -->
+<form method="POST" enctype="multipart/form-data">
+  <input type="file" id="file" name="file">
   <input type="submit">
 </form>
 
