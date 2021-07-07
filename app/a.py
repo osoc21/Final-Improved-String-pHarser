@@ -4,9 +4,11 @@
 
 from flask import Flask, render_template, request
 import subprocess
+import os
 
 api = Flask(__name__)
 
+temporary_folder = "temp/"
 
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
@@ -23,7 +25,7 @@ def get_homepage():
             # stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
 
             # Save the uploaded file
-            new_filename = "tmp/" + f.filename
+            new_filename = temporary_folder + f.filename
             f.save(new_filename)
 
             data = subprocess.check_output('anystyle -f json --stdout parse ' + new_filename, shell=True)
@@ -56,4 +58,5 @@ def post_data():
   return render_template("index.html")'''
 
 if __name__ == '__main__':
-    api.run()
+  os.mkdir(temporary_folder)
+  api.run()
