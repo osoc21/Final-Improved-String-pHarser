@@ -1,59 +1,42 @@
 # tester
-import requests
-base_url = "localhost:3000/"
 
 # POST fish.com/ DATA --> return json
 
-#response = requests.get(base_url)
-#print(response)
-
-
-from flask import Flask, json, render_template, request
-import io
-import csv
+from flask import Flask, render_template, request
 import subprocess
-
-companies = [{"id": 1, "name": "Company One"}, {"id": 2, "name": "Company Two"}]
 
 api = Flask(__name__)
 
+
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
-  if request.method == "GET":
-    return render_template("index.html")
+    if request.method == "GET":
+        return render_template("index.html")
 
-  elif request.method == "POST":
-    # Check if a file was uploaded (key name: file)
-    if request.files.get('file'):
-      f = request.files['file']
-      
+    elif request.method == "POST":
+        # Check if a file was uploaded (key name: file)
+        if request.files.get('file'):
+            f = request.files['file']
 
-      
-      # It seems like anystyle-cli wants a file to read, and can't handle a direct string input,
-      # but keeping the following line commented in case we find a way to direct it
-      #stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
+            # It seems like anystyle-cli wants a file to read, and can't handle a direct string input,
+            # but keeping the following line commented in case we find a way to direct it
+            # stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
 
-      # Save the uploaded file
-      new_filename = "tmp/" + f.filename
-      f.save(new_filename)
+            # Save the uploaded file
+            new_filename = "tmp/" + f.filename
+            f.save(new_filename)
 
-      data = subprocess.check_output('anystyle -f json --stdout parse ' + new_filename, shell=True)
-      return api.response_class(
-        response=data,
-        status=200,
-        mimetype='application/json'
-      )
+            data = subprocess.check_output('anystyle -f json --stdout parse ' + new_filename, shell=True)
+            return api.response_class(
+                response=data,
+                status=200,
+                mimetype='application/json'
+            )
+        else:
+            print("no data file")
 
+        return render_template("index.html")
 
-      #csv_input = csv.reader(stream)
-
-      #print(csv_input)
-      #for row in csv_input:
-       # print(row)
-    else:
-        print("no data file")
-
-    return render_template("index.html")
 
 # Upload citation string
 '''@api.route('/', methods=['POST'])
