@@ -19,9 +19,19 @@
 </div>
 
 <!-- Flask requires that you use encoding type multipart/form-data for file uploads! -->
-<form method="POST" enctype="multipart/form-data">
-  <input type="file" id="file" name="file" class="center" style="font-family:Amatic SC;color:white;">
-  <input type="submit" class="center">
-</form>
+<div class="center">
+    <form method="POST" enctype="multipart/form-data">
+      <input type="file" id="file" name="file" class="center" style="font-family:Amatic SC;color:white;">
+      <input type="submit" id="submit_button" class="center" style="border-radius: 50px 20px;">
+    </form>
+</div>
+
+
+<div class="upload-btn-wrapper center_button">
+    <form method="POST" enctype="multipart/form-data">
+        <button class="btn">Upload a file</button>
+        <input type="file" id="file" name="file" class="center">
+    </form>
+</div>
 </body>
 </html>
