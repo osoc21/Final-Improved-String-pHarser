@@ -9,6 +9,9 @@ base_url = "localhost:3000/"
 
 
 from flask import Flask, json, render_template, request
+import io
+import csv
+import subprocess
 
 companies = [{"id": 1, "name": "Company One"}, {"id": 2, "name": "Company Two"}]
 
@@ -18,18 +21,35 @@ api = Flask(__name__)
 def get_homepage():
   if request.method == "GET":
     return render_template("index.html")
+
   elif request.method == "POST":
-    if request.files.get('filename'):
-      print("found file")
+    # Check if a file was uploaded (key name: file)
+    if request.files.get('file'):
       f = request.files['file']
-      print(f)
-      stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
-      csv_input = csv.reader(stream)
-          #print("file contents: ", file_contents)
-          #print(type(file_contents))
-      print(csv_input)
-      for row in csv_input:
-        print(row)
+      
+
+      
+      # It seems like anystyle-cli wants a file to read, and can't handle a direct string input,
+      # but keeping the following line commented in case we find a way to direct it
+      #stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
+
+      # Save the uploaded file
+      new_filename = "tmp/" + f.filename
+      f.save(new_filename)
+
+      data = subprocess.check_output('anystyle -f json --stdout parse ' + new_filename, shell=True)
+      return api.response_class(
+        response=data,
+        status=200,
+        mimetype='application/json'
+      )
+
+
+      #csv_input = csv.reader(stream)
+
+      #print(csv_input)
+      #for row in csv_input:
+       # print(row)
     else:
         print("no data file")
 
