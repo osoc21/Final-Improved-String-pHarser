@@ -19,4 +19,4 @@ ENV FLASK_DEBUG=1
 
 EXPOSE 5000/tcp
 
-CMD ["flask", "run"]
+CMD ["flask", "run", "--host=0.0.0.0"]
