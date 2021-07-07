@@ -24,8 +24,22 @@
     }
   ],
   "paths": {
-    "/request": {
+    "/": {
       "post": {
+        "requestBody": {
+          "description": "Citation Request Post",
+          "required": true,
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
         "tags": [
           "Citation Parse Request"
         ],

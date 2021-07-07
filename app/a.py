@@ -53,7 +53,8 @@ def get_homepage():
         else:
             new_filename = temporary_folder + "citation.txt"
             f = open(new_filename, "w")
-            f.write(request.form.get("data"))
+
+            f.write(request.get_data().decode("UTF8"))
             f.close()
             data = subprocess.check_output('anystyle -f json --stdout parse ' + new_filename, shell=True)
             return api.response_class(
