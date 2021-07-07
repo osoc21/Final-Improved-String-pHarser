@@ -6,6 +6,8 @@ from flask import Flask, render_template, request
 import subprocess
 import os
 
+from flask.helpers import send_from_directory
+
 api = Flask(__name__)
 
 temporary_folder = "temp/"
@@ -39,6 +41,10 @@ def get_homepage():
 
         return render_template("index.html")
 
+# Serve CSS until it's handled by something else
+@api.route('/css/<path:path>')
+def css(path):
+  return send_from_directory('css', path)
 
 # Upload citation string
 '''@api.route('/', methods=['POST'])
