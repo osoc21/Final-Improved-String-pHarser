@@ -14,3 +14,20 @@
     animation-iteration-count: infinite;
     animation-timing-function: linear;
 }
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.text_center {
+    text-align: center;
+}
+
+body {
+  background-image: url("../assets/background.jpg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
