@@ -3,14 +3,28 @@
 # POST fish.com/ DATA --> return json
 
 from flask import Flask, render_template, request
+from flask_swagger_ui import get_swaggerui_blueprint
 import subprocess
 import os
+import shutil
 
 from flask.helpers import send_from_directory
 
 api = Flask(__name__)
 
+SWAGGER_URL = '/swagger'
+API_URL = '/static/swagger.json'
+SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "Seans-Python-Flask-REST-Boilerplate"
+    }
+)
+api.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
+
 temporary_folder = "temp/"
+
 
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
@@ -37,19 +51,30 @@ def get_homepage():
                 mimetype='application/json'
             )
         else:
-            print("no data file")
+            new_filename = temporary_folder + "citation.txt"
+            f = open(new_filename, "w")
+            f.write(request.form.get("data"))
+            f.close()
+            data = subprocess.check_output('anystyle -f json --stdout parse ' + new_filename, shell=True)
+            return api.response_class(
+                response=data,
+                status=200,
+                mimetype='application/json'
+            )
 
         return render_template("index.html")
+
 
 # Serve CSS until it's handled by something else
 @api.route('/css/<path:path>')
 def css(path):
-  return send_from_directory('css', path)
+    return send_from_directory('css', path)
+
 
 # And the same for assets
 @api.route('/assets/<path:path>')
 def assets(path):
-  return send_from_directory('assets', path)
+    return send_from_directory('assets', path)
 
 
 @api.route('/js/<path:path>')
@@ -75,5 +100,9 @@ def post_data():
   return render_template("index.html")'''
 
 if __name__ == '__main__':
-  os.mkdir(temporary_folder)
-  api.run()
+    try:
+        os.mkdir(temporary_folder)
+    except:
+        shutil.rmtree(temporary_folder)
+        os.mkdir(temporary_folder)
+api.run()
