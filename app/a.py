@@ -46,6 +46,12 @@ def get_homepage():
 def css(path):
   return send_from_directory('css', path)
 
+# And the same for assets
+@api.route('/assets/<path:path>')
+def assets(path):
+  return send_from_directory('assets', path)
+
+
 # Upload citation string
 '''@api.route('/', methods=['POST'])
 def post_data():
