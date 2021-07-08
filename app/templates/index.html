@@ -2,6 +2,7 @@
 <html>
 <head>
   <link rel="stylesheet" href="css/stylesheet.css">
+  <link href='https://fonts.googleapis.com/css?family=Amatic SC' rel='stylesheet'>
 </head>
 
 <body>
@@ -13,11 +14,14 @@
    alt="teamcrest" width="20%" class="center">
 </div>
 <div id="texts">
-    <link href='https://fonts.googleapis.com/css?family=Amatic SC' rel='stylesheet'>
 <h1 style="font-family:Amatic SC;color:white;font-size:60px;" class="text_center">Final Improved String pHarser</h1>
 </div>
 </div>
-
+<script>
+function rotate(){
+    document.getElementById("crest").classList.add('rotate');
+}
+</script>
 <!-- Flask requires that you use encoding type multipart/form-data for file uploads! -->
 <div class="center">
     <form method="POST" enctype="multipart/form-data">
@@ -27,7 +31,7 @@
         <span id="fileSpan">No file chosen</span>
         <input type="file" id="file" name="file" class="center" style="color:white;">
       </div>
-      <input type="submit" id="submit_button" class="center" style="border-radius: 50px 20px;">
+      <input type="submit" id="submit_button" class="center" style="border-radius: 50px 20px;" onclick="rotate()">
     </form>
 </div>
 

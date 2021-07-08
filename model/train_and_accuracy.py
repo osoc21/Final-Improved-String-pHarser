@@ -5,7 +5,7 @@ import os
 import csv
 
 '''
-Example usage: python3 train_and_accuracy train_examples.csv train_ratio (between [0, 1])
+Example usage: python3 train_and_accuracy.py examples.csv train_ratio (between [0, 1])
 '''
 
 # Parse the command line arguments
