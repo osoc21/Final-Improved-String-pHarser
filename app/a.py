@@ -7,6 +7,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import subprocess
 import os
 import shutil
+import glob
 
 from flask.helpers import send_from_directory
 
@@ -24,6 +25,7 @@ SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
 api.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 temporary_folder = "temp/"
+model_folder = "model/"
 
 
 @api.route('/', methods=['GET', 'POST'])
@@ -36,15 +38,12 @@ def get_homepage():
         if request.files.get('file'):
             f = request.files['file']
 
-            # It seems like anystyle-cli wants a file to read, and can't handle a direct string input,
-            # but keeping the following line commented in case we find a way to direct it
-            # stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
 
             # Save the uploaded file
             new_filename = temporary_folder + f.filename
             f.save(new_filename)
 
-            data = subprocess.check_output('anystyle -f json --stdout parse ' + new_filename, shell=True)
+            data, used_model = process_file(new_filename)
             return api.response_class(
                 response=data,
                 status=200,
@@ -56,7 +55,7 @@ def get_homepage():
 
             f.write(request.get_data().decode("UTF8"))
             f.close()
-            data = subprocess.check_output('anystyle -f json --stdout parse ' + new_filename, shell=True)
+            data, used_model = process_file(new_filename, model_name="examples-26")
             return api.response_class(
                 response=data,
                 status=200,
@@ -65,6 +64,54 @@ def get_homepage():
 
         return render_template("index.html")
 
+
+"""
+process_file: pass a filename, throw it through anystyle, return the response 
+
+It seems like anystyle-cli wants a file to read, and can't handle a direct string input,
+but keeping the following line commented in case we find a way to direct it
+
+Arguments:
+  > filepath: the path to the file that has to be parsed by anystyle
+  > model_name: the name or path of the model you wish to use. If ommited, will default to the latest model.
+
+Example:
+  Usage: process_file("citation.txt", "examples-300")
+  Return: [str(anystyle json array), str(path to model used)]
+"""
+
+def process_file(filepath, model_name=False):
+  # If no model is specified, grab the newest
+  if not model_name:
+    models = glob.glob(model_folder + "*.mod")
+    model = max(models, key=os.path.getctime)
+  else:
+    model = select_model(model_name)
+  return [
+    subprocess.check_output('anystyle -P ' + model + ' -f json --stdout parse ' + filepath, shell=True),
+    model.replace(model_folder, "")
+  ]
+  
+
+
+"""
+select_model is a function that'll return a model to use.
+It'll make sure that .mod (the model extension) is added, and then
+try to find the model. If the model exists, return the path of that model.
+If the model doesn't exist, throw an exception
+
+Example usage: select_model("examples-300.mod")
+Example return: model/examples-300.mod
+"""
+def select_model(model_name):
+  # Ensure that model_path has the folder & extension, but only once
+  model_name = model_name.replace(model_folder, "").replace(".mod", "")
+  model_path = model_folder + model_name + ".mod"
+
+  if os.path.isfile(model_path):
+    return model_path
+  else:
+    raise FileNotFoundError
 
 # Serve CSS until it's handled by something else
 @api.route('/css/<path:path>')
