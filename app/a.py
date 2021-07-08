@@ -79,34 +79,79 @@ Method: POST
 """
 @api.route('/parse', methods=['POST'])
 def parse():
-  # File upload from a form
+  # Step 1: figure out what kind of input is given
   content_type = request.headers.get("content-type")
-  if "multipart/form-data" in content_type:
-      f = request.files['file']
-      # Save the uploaded file
-      new_filename = temporary_folder + f.filename
-      f.save(new_filename)
-
-      data, used_model = process_file(new_filename)
+  file_upload = False
+  
+  if "text/plain" in content_type:
+    input_type = "txt"
+  if "csv" in content_type:
+    input_type = "csv"
+  # If a form is used to send a file
+  elif "multipart/form-data" in content_type:
+    file_upload = True
+    old_filename = request.files['file'].filename.lower()
+    # Check for allowed formats
+    if old_filename.endswith("csv"):
+      input_type = "csv"
+    elif old_filename.endswith("txt") or old_filename.endswith("ref"):
+      input_type = "txt"
+    else:
+      # If a non-supported format gets uploaded, return 422
       return api.response_class(
-          response=data,
-          status=200,
-          mimetype='application/json'
+          response="The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.",
+          status=422  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422
       )
-  # Fallback
+  # If input type couldn't be determined, assume plaintext
   else:
-      new_filename = temporary_folder + "citation.txt"
-      f = open(new_filename, "w")
+    input_type = "txt"
+  
 
-      f.write(request.get_data().decode("UTF8"))
-      f.close()
-      data, used_model = process_file(new_filename, model_name="examples-26")
-      return api.response_class(
-          response=data,
-          status=200,
-          mimetype='application/json'
-      )
 
+  # Step 2: put the input in a form that anystyle-cli can work with
+  """
+  https://github.com/inukshuk/anystyle-cli
+    The input argument can be a single text document containing one full
+    reference per line (blank lines will be ignored), or a folder containing
+    multiple documents. The (optional) output argument specifies
+    the folder where the results shall be saved; if no output folder is
+    specified, results will be saved in the folder containing the input.
+
+    ...
+
+    ref     One reference per line, suitable for parser input;
+    txt     Same as `ref';
+
+    ...
+
+
+  From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input
+  """
+  
+  # To ensure no duplicate filenames, use headers to create a filename
+  input_filename = temporary_folder + "non_unique_name_yet" + "." + input_type
+ 
+  # If a string was directly given, save it to a file
+  if not file_upload:
+    file_from_string = open(input_filename, "w")
+    file_from_string.write(request.get_data().decode("UTF8"))
+    file_from_string.close()
+  else:
+    # If a file is getting uploaded, save it as well
+    request.files['file'].save(input_filename)
+
+
+
+  # Step 3: run anystyle and return the result
+  data, used_model = process_file(input_filename)
+
+  # TODO remove the old file, but can it be done asynchronously?
+
+  return api.response_class(
+    response=data,
+    status=200,
+    mimetype='application/json'
+  )
 
 
 """
