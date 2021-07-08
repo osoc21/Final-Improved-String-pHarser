@@ -6,13 +6,15 @@ import argparse
 Example usage: python3 csv2xml.py examples.csv converted-examples.xml
 '''
 parser = argparse.ArgumentParser(description='Convert CSV file to XML file.')
-parser.add_argument('input_file', metavar='N', type=str, nargs='+',
+parser.add_argument('input_file', metavar='input_file', type=str,
                     help='The input CSV file.')
-parser.add_argument('output_file', metavar='N', type=str, nargs='+',
+parser.add_argument('output_file', metavar='output_file', type=str,
                     help='The output XML file.')
+args = parser.parse_args()
 
-input_file = sys.argv[1]
-output_file = sys.argv[2]
+# Put the command line variables in to python variables
+input_file = args.input_file
+output_file = args.output_file
 
 citations = []
 

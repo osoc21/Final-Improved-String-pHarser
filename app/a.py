@@ -51,6 +51,19 @@ def get_homepage():
         return parse()
 
 
+@api.route('/about/', methods=['GET'])
+def get_about_page():
+    return render_template("about.html")
+
+
+@api.route('/tos/', methods=['GET'])
+def get_tos_page():
+    return render_template("termsofuse.html")
+
+
+@api.route('/contact/', methods=['GET'])
+def get_contact_page():
+    return render_template("contact.html")
 """
 Parse citation strings from a csv string into an array of JSON objects.
 
