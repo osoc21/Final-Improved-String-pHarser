@@ -7,8 +7,8 @@
 
 ### Docker
 After installing Docker, all you have to do is build the dockerfile:
-```
-(sudo) docker build -t fish .
+```bash
+$ sudo docker build -t fish .
 ```
 
 ### Manual
@@ -23,7 +23,10 @@ After installing Docker, all you have to do is build the dockerfile:
 ## Usage
 
 ### Docker
-Run `(sudo) docker run -p 5000:5000 fish`.
+Run the following command:
+```bash
+$ sudo docker run -p 5000:5000 fish
+```
 
 ### Manual (Windows)
 ```

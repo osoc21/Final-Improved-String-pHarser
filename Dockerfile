@@ -4,11 +4,9 @@ RUN apt-get update -y && apt-get upgrade -y && \
     apt-get install -y python3 python3-pip
 RUN gem install anystyle-cli
 
-# Set the workdir to /app in the container
-WORKDIR /app
-
 COPY requirements.txt .
-COPY app/ .
+COPY app/ /app
+COPY model/ /model
 
 RUN pip3 install -r requirements.txt
 
@@ -18,5 +16,7 @@ ENV FLASK_ENV=development
 ENV FLASK_DEBUG=1
 
 EXPOSE 5000/tcp
+
+WORKDIR /app
 
 CMD ["flask", "run", "--host=0.0.0.0"]
