@@ -8,6 +8,7 @@ import subprocess
 import os
 import shutil
 import glob
+import time
 
 from flask.helpers import send_from_directory
 
@@ -142,7 +143,9 @@ def parse():
   """
   
   # To ensure no duplicate filenames, use headers to create a filename
-  input_filename = temporary_folder + "non_unique_name_yet" + "." + input_type
+  # This will give issues if two people upload two files with the exact same size on the exact same second
+  # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
+  input_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + input_type
  
   # If a string was directly given, save it to a file
   if not file_upload:
