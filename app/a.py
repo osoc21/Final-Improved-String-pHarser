@@ -28,41 +28,66 @@ temporary_folder = "temp/"
 model_folder = "model/"
 
 
+"""
+User Interface to manually upload a file, or (later on) manually correct output.
+
+URL: domain.com
+METHOD: GET
+
+---
+
+An alias for /parse
+URL: domain.com
+METHOD: POST
+
+"""
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
     if request.method == "GET":
         return render_template("index.html")
 
+    # If a post gets done to /, assume the user wants to parse, so call /parse
     elif request.method == "POST":
-        # Check if a file was uploaded (key name: file)
-        if request.files.get('file'):
-            f = request.files['file']
+        return parse()
 
 
-            # Save the uploaded file
-            new_filename = temporary_folder + f.filename
-            f.save(new_filename)
+"""
+Parse citation strings into an array of JSON objects.
 
-            data, used_model = process_file(new_filename)
-            return api.response_class(
-                response=data,
-                status=200,
-                mimetype='application/json'
-            )
-        else:
-            new_filename = temporary_folder + "citation.txt"
-            f = open(new_filename, "w")
+URL: domain.com/parse
+Method: POST
+Content-type: 
 
-            f.write(request.get_data().decode("UTF8"))
-            f.close()
-            data, used_model = process_file(new_filename, model_name="examples-26")
-            return api.response_class(
-                response=data,
-                status=200,
-                mimetype='application/json'
-            )
 
-        return render_template("index.html")
+"""
+@api.route('/parse', methods=['POST'])
+def parse():
+  # Check if a file was uploaded (key name: file)
+  if request.files.get('file'):
+      f = request.files['file']
+      # Save the uploaded file
+      new_filename = temporary_folder + f.filename
+      f.save(new_filename)
+
+      data, used_model = process_file(new_filename)
+      return api.response_class(
+          response=data,
+          status=200,
+          mimetype='application/json'
+      )
+  else:
+      new_filename = temporary_folder + "citation.txt"
+      f = open(new_filename, "w")
+
+      f.write(request.get_data().decode("UTF8"))
+      f.close()
+      data, used_model = process_file(new_filename, model_name="examples-26")
+      return api.response_class(
+          response=data,
+          status=200,
+          mimetype='application/json'
+      )
+
 
 
 """
@@ -79,7 +104,6 @@ Example:
   Usage: process_file("citation.txt", "examples-300")
   Return: [str(anystyle json array), str(path to model used)]
 """
-
 def process_file(filepath, model_name=False):
   # If no model is specified, grab the newest
   if not model_name:
@@ -91,7 +115,7 @@ def process_file(filepath, model_name=False):
     subprocess.check_output('anystyle -P ' + model + ' -f json --stdout parse ' + filepath, shell=True),
     model.replace(model_folder, "")
   ]
-  
+
 
 
 """
@@ -113,6 +137,8 @@ def select_model(model_name):
   else:
     raise FileNotFoundError
 
+
+
 # Serve CSS until it's handled by something else
 @api.route('/css/<path:path>')
 def css(path):
@@ -128,6 +154,7 @@ def assets(path):
 @api.route('/js/<path:path>')
 def js(path):
   return send_from_directory('js', path)
+
 
 
 # Upload citation string
