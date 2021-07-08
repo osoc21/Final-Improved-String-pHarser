@@ -16,15 +16,11 @@ all_examples_file_name = args.examples
 # Open the examples file
 all_examples_file = open(all_examples_file_name, "r", newline='\n', encoding="utf-8")
 csv_reader = csv.DictReader(all_examples_file)
-line_nb = 0
-train_examples_count = 0
-test_examples_count = 0
 
 # Count amount of examples are in the year range
 amount_of_examples_in_range = 0
 all_years = []
 for row in csv_reader:
-    line_nb += 1
     try:
         year = int(row["Year"])
         if year != 300000:
@@ -33,7 +29,6 @@ for row in csv_reader:
         pass
 
 all_years.sort()
-print(all_years)
 
 data = np.array(all_years)
 
