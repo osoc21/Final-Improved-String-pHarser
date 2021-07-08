@@ -5,7 +5,7 @@ import os
 import csv
 
 '''
-Example usage: python3 train_and_accuracy.py examples.csv train_ratio (between [0, 1])
+Example usage: python3 train_and_accuracy.py examples.csv train_ratio [--start 2000] [--end 2021]
 '''
 
 # Parse the command line arguments
@@ -22,6 +22,7 @@ parser.add_argument('--end', metavar='int', type=int, default=sys.maxsize,
                     help='End year for the citations to train.', required=False)
 args = parser.parse_args()
 
+# Put the command line variables in to python variables
 all_examples_file_name = args.examples
 train_examples_ratio = args.train_ratio
 start_year = args.start
@@ -117,4 +118,6 @@ data = data.decode("utf-8")
 
 # Print results
 print(data)
-print(data.split(" ")[7] + " error rate")
+res = [i for i in data.split() if "%" in i]
+print("Error rate {}".format(res[0]))
+print("Token error rate {}".format(res[1]))
