@@ -38,6 +38,22 @@ body {
   background-size: cover;
 }
 
+h1 {
+    font-family:Amatic SC;
+    color:white;
+    font-size:60px;
+}
+
+p {
+    font-family:Amatic SC;
+    color:white;
+    font-size:30px;
+}
+
+a, nav {
+    color:white;
+}
+
 #submit_button{
   background-color: #4CAF50;
   border: none;
@@ -102,4 +118,12 @@ body {
 
 .file-button input{
     display: none; /* no-js clients might be a problem */
+}
+
+.navigation{
+    position:absolute;
+    top:0;
+    right:0;
+    font-size: 30px;
+
 }
