@@ -149,8 +149,8 @@ def parse():
  
   # If a string was directly given, save it to a file
   if not file_upload:
-    file_from_string = open(input_filename, "w")
-    file_from_string.write(request.get_data().decode("UTF8"))
+    file_from_string = open(input_filename, "w", encoding="utf-8")
+    file_from_string.write(request.get_data().decode("utf-8"))
     file_from_string.close()
   else:
     # If a file is getting uploaded, save it as well
