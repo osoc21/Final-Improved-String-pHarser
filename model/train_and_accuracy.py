@@ -29,16 +29,16 @@ end_year = args.end
 
 
 # Open the examples file
-all_examples_file = open(all_examples_file_name, "r", encoding="utf-8")
+all_examples_file = open(all_examples_file_name, "r", newline='\n', encoding="utf-8")
 
 # Open a train examples CSV file to store the train examples
 train_file_name = 'train_examples.csv'
-train_file = open(train_file_name, 'w', encoding="utf-8")
+train_file = open(train_file_name, 'w', newline='\n', encoding="utf-8")
 train_writer = csv.writer(train_file)
 
 # Open a test examples CSV file to store the test examples
 test_file_name = 'test_examples.csv'
-test_file = open(test_file_name, 'w', encoding="utf-8")
+test_file = open(test_file_name, 'w', newline='\n', encoding="utf-8")
 test_writer = csv.writer(test_file)
 
 # Read out all lines of the full examples and split into train and test examples.

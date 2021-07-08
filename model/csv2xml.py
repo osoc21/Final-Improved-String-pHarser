@@ -46,6 +46,7 @@ for citation in citations:
             item1 = ET.SubElement(items, field)
             item1.text = citation[field]
 
+
 # create a new XML file with the results
 xmldata = ET.tostring(data)
 xmlfile = open(output_file, "wb")
