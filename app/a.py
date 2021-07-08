@@ -52,18 +52,36 @@ def get_homepage():
 
 
 """
-Parse citation strings into an array of JSON objects.
+Parse citation strings from a csv string into an array of JSON objects.
 
 URL: domain.com/parse
 Method: POST
-Content-type: 
+Content-Type: text/csv
 
+---
+
+Parse citation strings from a html-uploaded file into an array of JSON objects.
+
+URL: domain.com/parse
+Method: POST
+Content-Type: multipart/form-data
+
+For the form:
+  <form enctype="multipart/form-data">
+    <input type="file" name="file">
+    ...
+
+Parse citation strings from pure text into an array of JSON objects.
+
+URL: domain.com/parse
+Method: POST
 
 """
 @api.route('/parse', methods=['POST'])
 def parse():
-  # Check if a file was uploaded (key name: file)
-  if request.files.get('file'):
+  # File upload from a form
+  content_type = request.headers.get("content-type")
+  if "multipart/form-data" in content_type:
       f = request.files['file']
       # Save the uploaded file
       new_filename = temporary_folder + f.filename
@@ -75,6 +93,7 @@ def parse():
           status=200,
           mimetype='application/json'
       )
+  # Fallback
   else:
       new_filename = temporary_folder + "citation.txt"
       f = open(new_filename, "w")
