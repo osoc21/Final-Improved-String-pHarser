@@ -3,6 +3,8 @@ import sys
 import subprocess
 import os
 import csv
+import json
+import re
 
 '''
 Example usage: python3 train_and_accuracy.py examples.csv train_ratio [--start 2000] [--end 2021]
@@ -77,7 +79,7 @@ for row in csv_reader:
             year = int(row["Year"])
         except ValueError:
             year = 0
-        if start_year < year < end_year:
+        if start_year <= year <= end_year:
             # Add line to train examples if it is in n first lines
             if train_examples_count < train_examples_amount:
                 train_writer.writerow(row.values())
@@ -113,11 +115,45 @@ subprocess.check_output('anystyle train ' + xml_train_file_name + ' ' + model_fi
 # Test the model
 data = subprocess.check_output('anystyle -P ' + model_file_name + ' check ' + xml_test_file_name, shell=True)
 
+# Analyse the result for each citation part
+output = subprocess.check_output('anystyle -P ' + model_file_name + ' -f json parse ' + test_file_name, shell=True)
+
+outputJSON = json.loads(output)
+
+test_file = open(test_file_name, 'r', newline='\n', encoding="utf-8")
+
+columns = ["Authors", "Year", "Title", "Book", "Series", "Publisher", "City", "Volume", "Issue", "Pagination", "DOI"]
+line_nb = 1
+mismatches = 0
+errors = 0
+csv_reader = csv.DictReader(test_file)
+
+totalParts = 0
+for line in csv_reader:
+    if line_nb >= 1:
+        for citationKey in columns:
+            totalParts += 1
+            try:
+                expected = line[citationKey]
+                expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
+                if expected != "":
+                    predicted = outputJSON[line_nb][citationKey][0]
+                    predicted = re.sub(r'[^A-Za-z0-9 ]+', '', predicted)
+
+                    if expected != predicted:
+                        # print("Expected" + citationKey + " : " + str(expected))
+                        # print("Predicted" + citationKey + " : " + str(predicted))
+                        mismatches += 1
+            except KeyError:
+                errors += 1
+    line_nb += 1
+
 # Decode the byte string to a string
 data = data.decode("utf-8")
 
 # Print results
 print(data)
 res = [i for i in data.split() if "%" in i]
+print("Parts errors rate ", (mismatches+errors)/totalParts * 100)
 print("Error rate {}".format(res[0]))
 print("Token error rate {}".format(res[1]))
