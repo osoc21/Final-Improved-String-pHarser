@@ -11,6 +11,7 @@ import glob
 import time
 import csv
 import json
+import pathlib
 
 from flask.helpers import send_from_directory
 
@@ -265,18 +266,28 @@ Example:
   Usage: process_file("citation.txt", "examples-300")
   Return: [str(anystyle json array), str(path to model used)]
 """
+model_folder_path = pathlib.Path(model_folder)
 def process_file(filepath, model_name=False):
   # If no model is specified, grab the newest
   if not model_name:
-    models = glob.glob(model_folder + "*.mod")
+    models = list(model_folder_path.rglob("*.mod"))
     model = max(models, key=os.path.getctime)
   else:
-    model = select_model(model_name)
+    # Since the model will be recursively globbed to be found, remove any path/extension
+    model_name = no_path_no_ext(model_name)
+    model = next(model_folder_path.rglob(model_name + ".mod"))
+  
+  # rglob may return WindowsPath, so convert to str
+  model = str(model)
+
   return [
-    subprocess.check_output('anystyle -P ' + model + ' -f json --stdout parse ' + filepath, shell=True),
-    model.replace(model_folder, "")
+    # Put quotes around the parameters in case of space
+    subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True),
+    os.path.basename(model)
   ]
 
+def no_path_no_ext(value):
+  return os.path.splitext(os.path.basename(value))[0]
 
 
 """
@@ -289,8 +300,6 @@ Example usage: select_model("examples-300.mod")
 Example return: model/examples-300.mod
 """
 def select_model(model_name):
-  # Ensure that model_path has the folder & extension, but only once
-  model_name = model_name.replace(model_folder, "").replace(".mod", "")
   model_path = model_folder + model_name + ".mod"
 
   if os.path.isfile(model_path):
