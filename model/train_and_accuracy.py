@@ -60,13 +60,12 @@ for row in csv_reader:
     line_nb += 1
     try:
         year = int(row["Year"])
-        if start_year < year < end_year:
+        if start_year <= year <= end_year:
             amount_of_examples_in_range += 1
     except ValueError:
         pass
 
 train_examples_amount = int(train_examples_ratio * amount_of_examples_in_range)
-
 # Reset the file reader to the beginning of the file
 all_examples_file.seek(0)
 line_nb = 0
@@ -82,7 +81,7 @@ for row in csv_reader:
         try:
             year = int(row["Year"])
         except ValueError:
-            year = 0
+            year = -1
         if start_year <= year <= end_year:
             # Add line to train examples if it is in n first lines
             if train_examples_count < train_examples_amount:
