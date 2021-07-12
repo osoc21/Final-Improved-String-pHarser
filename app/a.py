@@ -214,21 +214,18 @@ def parse():
   model_name = request.headers.get("model-name")
   data, used_model = process_file(input_filename, model_name)
 
-  # TODO remove the old file, but can it be done asynchronously?
+  threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
 
-
-
-  #await aiofiles.os.remove(input_filename)
-  remove_file = threading.Thread(target=remove_files_async, args=input_filenames)
-
+  print("Returning data...")
   return {
     "model": used_model,
     "data": json.loads(data)
   }
 
-def remove_files_async(files):
+def remove_files(files):
   for file in files:
     os.remove(file)
+  print("Removed")
 
 
 def header_boolean(header_value, default):
