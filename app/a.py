@@ -10,6 +10,7 @@ import shutil
 import glob
 import time
 import csv
+import json
 
 from flask.helpers import send_from_directory
 
@@ -206,15 +207,17 @@ def parse():
 
 
   # Step 3: run anystyle and return the result
-  data, used_model = process_file(input_filename)
+  model_name = request.headers.get("model-name")
+  data, used_model = process_file(input_filename, model_name)
 
   # TODO remove the old file, but can it be done asynchronously?
 
-  return api.response_class(
-    response=data,
-    status=200,
-    mimetype='application/json'
-  )
+
+  return {
+    "model": used_model,
+    "data": json.loads(data)
+  }
+
 
 
 def header_boolean(header_value, default):
