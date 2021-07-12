@@ -7,7 +7,7 @@ import json
 import re
 
 '''
-Example usage: python3 train_and_accuracy.py examples.csv train_ratio [--start 2000] [--end 2021]
+Example usage: python3 train_and_accuracy.py examples.csv train_ratio [--start 2000] [--end 2021] [--out out.mod]
 '''
 
 # Parse the command line arguments
@@ -22,6 +22,9 @@ parser.add_argument('--start', metavar='int', type=int, default=0,
                     help='Starting year for the citations to train.', required=False)
 parser.add_argument('--end', metavar='int', type=int, default=sys.maxsize,
                     help='End year for the citations to train.', required=False)
+parser.add_argument('--out', metavar='out.mod', type=str, default="out.mod",
+                    help='Output file name fot eht learned model', required=False)
+
 args = parser.parse_args()
 
 # Put the command line variables in to python variables
@@ -29,6 +32,7 @@ all_examples_file_name = args.examples
 train_examples_ratio = args.train_ratio
 start_year = args.start
 end_year = args.end
+model_file_name = args.out
 
 
 # Open the examples file
@@ -104,7 +108,6 @@ subprocess.check_output('python3 csv2xml.py ' + train_file_name + ' ' + xml_trai
 xml_test_file_name = "test_examples.xml"
 subprocess.check_output('python3 csv2xml.py ' + test_file_name + ' ' + xml_test_file_name, shell=True)
 
-model_file_name = "out.mod"
 # Delete output model file if it already exists
 if os.path.exists(model_file_name):
     os.remove(model_file_name)
