@@ -86,7 +86,7 @@ Headers:
       Ignore the firstline. Set to true if first line is a header, for example,: String,Authors,Year...
       Valid values: false, False, true, True, 1, 0
     )
-  Single-Column: {int, optional, defaults to None}
+  Single-Column: {int, optional, defaults to -1}
     (
       Only keep the data in the column with index int
       Won't have effect if not set
@@ -184,7 +184,7 @@ def parse():
     input_filename = input_filename_csv.replace("csv", "txt")
 
     ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
-    single_column = header_int(request.headers.get("Single-Column"), default=None)
+    single_column = header_int(request.headers.get("Single-Column"), default=-1)
 
     with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
       csv_reader = csv.reader(original_csv, delimiter=",")
@@ -194,10 +194,13 @@ def parse():
           ignore_firstline = False  # Don't ignore after the first continue
           continue  # Skip the csv_data append for the first line
 
-        if not single_column:
+        if single_column <= -1:
           csv_data.append(", ".join(row) + "\n")
         else:
-          csv_data.append(row[single_column] + "\n")
+          try:
+            csv_data.append(row[single_column] + "\n")
+          except IndexError:
+            pass
       with open(input_filename, "w", encoding="utf-8") as input_file:
         input_file.writelines(csv_data)
 
@@ -234,11 +237,13 @@ def header_boolean(header_value, default):
   return value
 
 # Parse an integer value
-def header_int(header_value, default=None):
+def header_int(header_value, default=-1):
   try:
     header_value = int(header_value)
   except ValueError:
-    return None
+    return default
+  except TypeError:
+    return default
 
   return header_value
 
