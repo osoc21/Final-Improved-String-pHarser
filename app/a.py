@@ -9,6 +9,7 @@ import os
 import shutil
 import glob
 import time
+import csv
 
 from flask.helpers import send_from_directory
 
@@ -66,15 +67,36 @@ def get_tos_page():
 def get_contact_page():
     return render_template("contact.html")
 """
+Parse citation strings from plain text, with one citation per line. This is the most ideal method
+
+URL: domain.com/parse
+Method: POST
+Content-Type: text/plain
+
+---
+
 Parse citation strings from a csv string into an array of JSON objects.
 
 URL: domain.com/parse
 Method: POST
-Content-Type: text/csv
+Headers:
+  Content-Type: text/csv
+  Ignore-Firstline: {boolean, optional, defaults to True}
+    (
+      Ignore the firstline. Set to true if first line is a header, for example,: String,Authors,Year...
+      Valid values: false, False, true, True, 1, 0
+    )
+  Single-Column: {int, optional, defaults to None}
+    (
+      Only keep the data in the column with index int
+      Won't have effect if not set
+      Example situation: a csv file with Citationstring,Authors,Year,Title,Book --> use index 0
+    )
 
 ---
 
 Parse citation strings from a html-uploaded file into an array of JSON objects.
+This will automatically decide which filetype it is (csv, plain...)
 
 URL: domain.com/parse
 Method: POST
@@ -84,11 +106,6 @@ For the form:
   <form enctype="multipart/form-data">
     <input type="file" name="file">
     ...
-
-Parse citation strings from pure text into an array of JSON objects.
-
-URL: domain.com/parse
-Method: POST
 
 """
 @api.route('/parse', methods=['POST'])
@@ -155,7 +172,34 @@ def parse():
   else:
     # If a file is getting uploaded, save it as well
     request.files['file'].save(input_filename)
+  
 
+  """ 
+  Example of a line as provided in a .csv file by VLIZ:
+  Krohling, W., & Zalmon, I. R. 2008. Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology 51: 213-221.
+  """
+
+  if input_type == "csv":
+    input_filename_csv = input_filename
+    input_filename = input_filename_csv.replace("csv", "txt")
+
+    ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
+    single_column = header_int(request.headers.get("Single-Column"), default=None)
+
+    with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
+      csv_reader = csv.reader(original_csv, delimiter=",")
+      csv_data = []
+      for row in csv_reader:
+        if ignore_firstline:
+          ignore_firstline = False  # Don't ignore after the first continue
+          continue  # Skip the csv_data append for the first line
+
+        if not single_column:
+          csv_data.append(", ".join(row) + "\n")
+        else:
+          csv_data.append(row[single_column] + "\n")
+      with open(input_filename, "w", encoding="utf-8") as input_file:
+        input_file.writelines(csv_data)
 
 
   # Step 3: run anystyle and return the result
@@ -168,6 +212,35 @@ def parse():
     status=200,
     mimetype='application/json'
   )
+
+
+def header_boolean(header_value, default):
+  # If the header input is a string, make it case insensitive
+  if (type(header_value) == str):
+    header_value = header_value.lower()
+  
+  # Check if value in False values (cause bool("False") == True)
+  if header_value in ["false", None, False, 0, "0"]:
+    value = False
+
+  # Check if value in True values
+  elif header_value in ["true", 1]:
+    value = True
+  
+  # Otherwise, use the default value
+  else:
+    value = default
+   
+  return value
+
+# Parse an integer value
+def header_int(header_value, default=None):
+  try:
+    header_value = int(header_value)
+  except ValueError:
+    return None
+
+  return header_value
 
 
 """
