@@ -10,6 +10,11 @@ import re
 Example usage: python3 train_and_accuracy.py examples.csv train_ratio [--start 2000] [--end 2021] [--out out.mod]
 '''
 
+CSV_DATA_PATH = "data/csv/"
+TEMP_DATA_PATH = "data/tmp/"
+XML_DATA_PATH = "data/xml/"
+MODEL_DATA_PATH = "data/models/"
+
 # Parse the command line arguments
 # examples is the full examples file
 # train_ratio is the ratio of train examples that should be taken from the full example dataset
@@ -23,7 +28,7 @@ parser.add_argument('--start', metavar='int', type=int, default=0,
 parser.add_argument('--end', metavar='int', type=int, default=sys.maxsize,
                     help='End year for the citations to train.', required=False)
 parser.add_argument('--out', metavar='out.mod', type=str, default="out.mod",
-                    help='Output file name fot eht learned model', required=False)
+                    help='Output file name fot the learned models', required=False)
 
 args = parser.parse_args()
 
@@ -34,18 +39,21 @@ start_year = args.start
 end_year = args.end
 model_file_name = args.out
 
+# As file at filePath is deleted now, so we should check if file exists or not not before deleting them
+if os.path.exists(MODEL_DATA_PATH + model_file_name):
+    os.remove(MODEL_DATA_PATH + model_file_name)
 
 # Open the examples file
-all_examples_file = open(all_examples_file_name, "r", newline='\n', encoding="utf-8")
+all_examples_file = open(CSV_DATA_PATH + all_examples_file_name, "r", newline='\n', encoding="utf-8")
 
 # Open a train examples CSV file to store the train examples
 train_file_name = 'train_examples.csv'
-train_file = open(train_file_name, 'w', newline='\n', encoding="utf-8")
+train_file = open(TEMP_DATA_PATH + train_file_name, 'w', newline='\n', encoding="utf-8")
 train_writer = csv.writer(train_file)
 
 # Open a test examples CSV file to store the test examples
 test_file_name = 'test_examples.csv'
-test_file = open(test_file_name, 'w', newline='\n', encoding="utf-8")
+test_file = open(TEMP_DATA_PATH + test_file_name, 'w', newline='\n', encoding="utf-8")
 test_writer = csv.writer(test_file)
 
 # Read out all lines of the full examples and split into train and test examples.
@@ -60,13 +68,12 @@ for row in csv_reader:
     line_nb += 1
     try:
         year = int(row["Year"])
-        if start_year < year < end_year:
+        if start_year <= year <= end_year:
             amount_of_examples_in_range += 1
     except ValueError:
         pass
 
 train_examples_amount = int(train_examples_ratio * amount_of_examples_in_range)
-
 # Reset the file reader to the beginning of the file
 all_examples_file.seek(0)
 line_nb = 0
@@ -82,7 +89,7 @@ for row in csv_reader:
         try:
             year = int(row["Year"])
         except ValueError:
-            year = 0
+            year = -1
         if start_year <= year <= end_year:
             # Add line to train examples if it is in n first lines
             if train_examples_count < train_examples_amount:
@@ -101,29 +108,29 @@ print("Train examples: {}".format(train_examples_count))
 print("Test examples: {}".format(test_examples_count))
 
 # Convert train examples CSV file to XML file
-xml_train_file_name = "train-examples.xml"
-subprocess.check_output('python3 csv2xml.py ' + train_file_name + ' ' + xml_train_file_name, shell=True)
+xml_train_file_name = "train_examples.xml"
+subprocess.check_output('python3 csv2xml.py ' + TEMP_DATA_PATH + train_file_name + ' ' + XML_DATA_PATH + xml_train_file_name, shell=True)
 
 # Convert test examples CSV file to XML file
 xml_test_file_name = "test_examples.xml"
-subprocess.check_output('python3 csv2xml.py ' + test_file_name + ' ' + xml_test_file_name, shell=True)
+subprocess.check_output('python3 csv2xml.py ' + TEMP_DATA_PATH + test_file_name + ' ' + XML_DATA_PATH + xml_test_file_name, shell=True)
 
-# Delete output model file if it already exists
+# Delete output models file if it already exists
 if os.path.exists(model_file_name):
     os.remove(model_file_name)
 
-# Train the model
-subprocess.check_output('anystyle train ' + xml_train_file_name + ' ' + model_file_name, shell=True)
+# Train the models
+subprocess.check_output('anystyle train ' + XML_DATA_PATH + xml_train_file_name + ' ' + MODEL_DATA_PATH + model_file_name, shell=True)
 
-# Test the model
-data = subprocess.check_output('anystyle -P ' + model_file_name + ' check ' + xml_test_file_name, shell=True)
+# Test the models
+data = subprocess.check_output('anystyle -P ' + MODEL_DATA_PATH + model_file_name + ' check ' + XML_DATA_PATH + xml_test_file_name, shell=True)
 
 # Analyse the result for each citation part
-output = subprocess.check_output('anystyle -P ' + model_file_name + ' -f json parse ' + test_file_name, shell=True)
+output = subprocess.check_output('anystyle -P ' + MODEL_DATA_PATH + model_file_name + ' -f json parse ' + TEMP_DATA_PATH + test_file_name, shell=True)
 
 outputJSON = json.loads(output)
 
-test_file = open(test_file_name, 'r', newline='\n', encoding="utf-8")
+test_file = open(TEMP_DATA_PATH + test_file_name, 'r', newline='\n', encoding="utf-8")
 
 columns = ["Authors", "Year", "Title", "Book", "Series", "Publisher", "City", "Volume", "Issue", "Pagination", "DOI"]
 line_nb = 1
