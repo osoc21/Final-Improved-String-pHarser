@@ -11,6 +11,7 @@ import glob
 import time
 import csv
 import json
+import threading
 
 from flask.helpers import send_from_directory
 
@@ -164,6 +165,7 @@ def parse():
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
   input_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + input_type
+  input_filenames = [input_filename]  # List of filenames to clean later
  
   # If a string was directly given, save it to a file
   if not file_upload:
@@ -183,6 +185,7 @@ def parse():
   if input_type == "csv":
     input_filename_csv = input_filename
     input_filename = input_filename_csv.replace("csv", "txt")
+    input_filenames.append(input_filename)
 
     ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
     single_column = header_int(request.headers.get("Single-Column"), default=-1)
@@ -213,11 +216,18 @@ def parse():
   # TODO remove the old file, but can it be done asynchronously?
 
 
+
+  #await aiofiles.os.remove(input_filename)
+  remove_file = threading.Thread(target=remove_files_async, args=input_filenames)
+
   return {
     "model": used_model,
     "data": json.loads(data)
   }
 
+def remove_files_async(files):
+  for file in files:
+    os.remove(file)
 
 
 def header_boolean(header_value, default):
