@@ -11,7 +11,7 @@ Example usage: python3 train_and_accuracy.py examples.csv train_ratio [--start 2
 '''
 
 CSV_DATA_PATH = "data/csv/"
-TEMP_DATA_PATH = "data/temp/"
+TEMP_DATA_PATH = "data/tmp/"
 XML_DATA_PATH = "data/xml/"
 MODEL_DATA_PATH = "data/models/"
 
