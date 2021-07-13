@@ -6,7 +6,7 @@ RUN gem install anystyle-cli
 
 COPY requirements.txt .
 COPY app/ /app
-COPY model/ /model
+COPY model/ app/model
 
 RUN pip3 install -r requirements.txt
 
