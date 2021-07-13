@@ -8,13 +8,17 @@ from os.path import isfile, join
 
 # Script that compares performance of a citation when using the full model vs when using a model based on the year.
 
+MODEL_FILE_NAME = "examples-2251.mod"
+TEST_CSV_FILE_NAME = "examples-aphia.csv"
+OUTPUT_XML_FILE_NAME = "examples-aphia.xml"
+
 YEARS_MODELS_PATH = "data/models/year_models/"
 CSV_PATH = "data/csv/"
 BASE_MODELS_PATH = "data/models/"
 XML_PATH = "data/xml/"
 
-base_model_file_name = BASE_MODELS_PATH + "examples-2000.mod"
-test_csv_file_name = CSV_PATH + "examples-2251.csv"
+base_model_file_name = BASE_MODELS_PATH + MODEL_FILE_NAME
+test_csv_file_name = CSV_PATH + TEST_CSV_FILE_NAME
 output = subprocess.check_output('anystyle -P ' + base_model_file_name +
                                  ' -f json parse ' + test_csv_file_name, shell=True)
 
@@ -23,7 +27,7 @@ outputJsonBase = json.loads(output)
 
 file_names = [f for f in listdir(YEARS_MODELS_PATH) if isfile(join(YEARS_MODELS_PATH, f))]
 
-test_xml_file_name = XML_PATH + "examples-2251.xml"
+test_xml_file_name = XML_PATH + OUTPUT_XML_FILE_NAME
 
 subprocess.check_output('python3 csv2xml.py ' + test_csv_file_name + ' ' + test_xml_file_name, shell=True)
 
@@ -42,9 +46,10 @@ nb = 1
 for line in csv_reader:
     try:
         line_nb += 1
-        year = outputJsonBase[line_nb]["Year"][0]
-        year = re.sub(r'[^A-Za-z0-9 ]+', '', year)
-
+        year = 0
+        if outputJsonBase[line_nb]["Year"] is not None:
+            year = outputJsonBase[line_nb]["Year"][0]
+            year = re.sub(r'[^A-Za-z0-9 ]+', '', year)
         totalParts = 0
         mismatchesYear = 0
         mismatchesBase = 0
@@ -54,6 +59,7 @@ for line in csv_reader:
 
         for file_name in file_names:
             year_range = file_name.split(".")[0].split("-")
+
             if year_range[0] <= year <= year_range[1]:
                 output = subprocess.check_output('anystyle -P ' + YEARS_MODELS_PATH + file_name +
                                                  ' -f json parse ' +
@@ -62,30 +68,41 @@ for line in csv_reader:
                 outputJsonYear = json.loads(output)
 
                 for citationKey in columns:
-                    if line_nb > 1 and line[citationKey] != "":
-                        totalParts += 1
+                    try:
+                        if citationKey != "String" and line[citationKey] != "":
+                            totalParts += 1
+                    except KeyError:
+                        pass
+                    try:
+                        expected = line[citationKey]
+
+                        expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
+
+                        if expected != "":
+                            try:
+                                predicted = outputJsonYear[line_nb-1][citationKey][0]
+                                predicted = re.sub(r'[^A-Za-z0-9 ]+', '', predicted)
+                                if expected != predicted:
+                                    # print("Expected" + citationKey + " : " + str(expected))
+                                    # print("Predicted" + citationKey + " : " + str(predicted))
+                                    mismatchesYear += 1
+                            except KeyError:
+                                errorsYear += 1
+                    except KeyError:
+                        pass
                     try:
                         expected = line[citationKey]
                         expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
                         if expected != "":
-                            predicted = outputJsonYear[line_nb-1][citationKey][0]
-                            predicted = re.sub(r'[^A-Za-z0-9 ]+', '', predicted)
-                            if expected != predicted:
-                                # print("Expected" + citationKey + " : " + str(expected))
-                                # print("Predicted" + citationKey + " : " + str(predicted))
-                                mismatchesYear += 1
+                            try:
+                                predictedBase = outputJsonBase[line_nb][citationKey][0]
+                                predictedBase = re.sub(r'[^A-Za-z0-9 ]+', '', predictedBase)
+                                if expected != predictedBase:
+                                    mismatchesBase += 1
+                            except KeyError:
+                                errorsBase += 1
                     except KeyError:
-                        errorsYear += 1
-                    try:
-                        expected = line[citationKey]
-                        expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
-                        if expected != "":
-                            predictedBase = outputJsonBase[line_nb][citationKey][0]
-                            predictedBase = re.sub(r'[^A-Za-z0-9 ]+', '', predictedBase)
-                            if expected != predictedBase:
-                                mismatchesBase += 1
-                    except KeyError:
-                        errorsBase += 1
+                        pass
                 outputJsonYear = json.loads(output)
 
         print("========= Year model ==========")
@@ -105,6 +122,8 @@ for line in csv_reader:
             missingRatioBase.append(errorsBase/totalParts)
 
     except KeyError:
+        print(line_nb)
+
         print("No year found in full model.")
 
 
