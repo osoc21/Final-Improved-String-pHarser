@@ -10,6 +10,9 @@ import shutil
 import glob
 import time
 import csv
+import json
+import pathlib
+import threading
 
 from flask.helpers import send_from_directory
 
@@ -163,6 +166,7 @@ def parse():
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
   input_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + input_type
+  input_filenames = [input_filename]  # List of filenames to clean later
  
   # If a string was directly given, save it to a file
   if not file_upload:
@@ -182,6 +186,7 @@ def parse():
   if input_type == "csv":
     input_filename_csv = input_filename
     input_filename = input_filename_csv.replace("csv", "txt")
+    input_filenames.append(input_filename)
 
     ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
     single_column = header_int(request.headers.get("Single-Column"), default=-1)
@@ -206,15 +211,21 @@ def parse():
 
 
   # Step 3: run anystyle and return the result
-  data, used_model = process_file(input_filename)
+  model_name = request.headers.get("model-name")
+  data, used_model = process_file(input_filename, model_name)
 
-  # TODO remove the old file, but can it be done asynchronously?
+  threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
 
-  return api.response_class(
-    response=data,
-    status=200,
-    mimetype='application/json'
-  )
+  print("Returning data...")
+  return {
+    "model": used_model,
+    "data": json.loads(data)
+  }
+
+def remove_files(files):
+  for file in files:
+    os.remove(file)
+  print("Removed")
 
 
 def header_boolean(header_value, default):
@@ -262,18 +273,28 @@ Example:
   Usage: process_file("citation.txt", "examples-300")
   Return: [str(anystyle json array), str(path to model used)]
 """
+model_folder_path = pathlib.Path(model_folder)
 def process_file(filepath, model_name=False):
   # If no model is specified, grab the newest
   if not model_name:
-    models = glob.glob(model_folder + "*.mod")
+    models = list(model_folder_path.rglob("*.mod"))
     model = max(models, key=os.path.getctime)
   else:
-    model = select_model(model_name)
+    # Since the model will be recursively globbed to be found, remove any path/extension
+    model_name = no_path_no_ext(model_name)
+    model = next(model_folder_path.rglob(model_name + ".mod"))
+  
+  # rglob may return WindowsPath, so convert to str
+  model = str(model)
+
   return [
-    subprocess.check_output('anystyle -P ' + model + ' -f json --stdout parse ' + filepath, shell=True),
-    model.replace(model_folder, "")
+    # Put quotes around the parameters in case of space
+    subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True),
+    os.path.basename(model)
   ]
 
+def no_path_no_ext(value):
+  return os.path.splitext(os.path.basename(value))[0]
 
 
 """
@@ -286,8 +307,6 @@ Example usage: select_model("examples-300.mod")
 Example return: model/examples-300.mod
 """
 def select_model(model_name):
-  # Ensure that model_path has the folder & extension, but only once
-  model_name = model_name.replace(model_folder, "").replace(".mod", "")
   model_path = model_folder + model_name + ".mod"
 
   if os.path.isfile(model_path):
