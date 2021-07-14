@@ -231,6 +231,8 @@ def parse():
     return return_data
   # If sent from a form/thus a web browser, return rendered HTML
   else:
+    print(return_data)
+    print(return_data["data"][0]["Authors"][0])
     return render_template("response.html", data=return_data)
   
 
