@@ -69,6 +69,12 @@ def get_tos_page():
 @api.route('/contact/', methods=['GET'])
 def get_contact_page():
     return render_template("contact.html")
+
+
+def index_error(err_code, message):
+  data = {"response": message}
+  return render_template('index.html', data=data), err_code, {'Content-Type': 'text/html'}
+
 """
 Parse citation strings from plain text, with one citation per line. This is the most ideal method
 
@@ -133,8 +139,7 @@ def parse():
       input_type = "txt"
     else:
       # If a non-supported format gets uploaded, return 422
-      data = {"response": "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported."}
-      return render_template('index.html', data=data), 422, {'Content-Type': 'text/html'}
+      return index_error(422, "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.")
   # If input type couldn't be determined, assume plaintext
   else:
     input_type = "txt"
@@ -217,7 +222,12 @@ def parse():
   model_name = request.headers.get("model-name")
   data, used_model = process_file(input_filename, model_name)
 
+  data = json.loads(data)
+
   threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
+
+  if len(data) <= 0:
+      return index_error(422, "No data found in input")
 
   print("Returning data...")
   print(json.loads(data))
@@ -231,8 +241,6 @@ def parse():
     return return_data
   # If sent from a form/thus a web browser, return rendered HTML
   else:
-    print(return_data)
-    print(return_data["data"][0]["Authors"][0])
     return render_template("response.html", data=return_data)
   
 
