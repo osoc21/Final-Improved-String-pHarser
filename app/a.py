@@ -117,12 +117,13 @@ def parse():
   content_type = request.headers.get("content-type")
   file_upload = False
 
+
   if "text/plain" in content_type:
     input_type = "txt"
   if "csv" in content_type:
     input_type = "csv"
   # If a form is used to send a file
-  elif "multipart/form-data" in content_type:
+  elif len(request.files) >= 1:
     file_upload = True
     old_filename = request.files['file'].filename.lower()
     # Check for allowed formats
@@ -168,8 +169,12 @@ def parse():
  
   # If a string was directly given, save it to a file
   if not file_upload:
+    # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
+    # Either get from form or from request data    
+    data = request.form.get("citationstring", request.get_data().decode("utf-8"))
+  
     file_from_string = open(input_filename, "w", encoding="utf-8")
-    file_from_string.write(request.get_data().decode("utf-8"))
+    file_from_string.write(data)
     file_from_string.close()
   else:
     # If a file is getting uploaded, save it as well
@@ -216,7 +221,18 @@ def parse():
 
   print("Returning data...")
   print(json.loads(data))
-  return render_template("response.html", data={"model": used_model, "data": json.loads(data)})
+  return_data = {
+    "model": used_model,
+    "data": json.loads(data)
+  }
+
+  # If sent using a regular request, just return the JSON file
+  if not request.form:
+    return return_data
+  # If sent from a form/thus a web browser, return rendered HTML
+  else:
+    return render_template("response.html", data=return_data)
+  
 
 def remove_files(files):
   for file in files:
