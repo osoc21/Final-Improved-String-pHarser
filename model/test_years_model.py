@@ -41,8 +41,9 @@ missingRatioBase = []
 
 mismatchedRatioYears = []
 mismatchedRatioBase = []
-
+total_examples = sum(1 for row in csv_reader)
 nb = 1
+test_csv_file.seek(0)
 for line in csv_reader:
     try:
         line_nb += 1
@@ -121,17 +122,20 @@ for line in csv_reader:
             mismatchedRatioBase.append(mismatchesBase/totalParts)
             missingRatioBase.append(errorsBase/totalParts)
 
-    except KeyError:
-        print(line_nb)
+        print("========= Progress ==========")
+        print(str(line_nb/total_examples * 100) + "%")
+        if len(missingRatioYears) > 1:
+            print("========= Statistics ==========")
 
+            print(f"Mismatched ratio years model {statistics.mean(mismatchedRatioYears)}")
+            print(f"Missing ratio years model {statistics.mean(missingRatioYears)}")
+
+            print(f"Mismatched ratio base model {statistics.mean(mismatchedRatioBase)}")
+            print(f"Missing ratio base model {statistics.mean(missingRatioBase)}")
+
+    except KeyError:
         print("No year found in full model.")
 
 
-print("========= ----------- ==========")
 
-print(f"Mismatched ratio years model {statistics.mean(mismatchedRatioYears)}")
-print(f"Missing ratio years model {statistics.mean(missingRatioYears)}")
-
-print(f"Mismatched ratio base model {statistics.mean(mismatchedRatioBase)}")
-print(f"Missing ratio base model {statistics.mean(missingRatioBase)}")
 
