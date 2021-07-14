@@ -27,6 +27,14 @@ body {
   margin-right: auto;
 }
 
+.center_label {
+    display: block;
+    text-align: center;
+    font-family:Amatic SC;
+    color:white;
+    font-size:25px;
+}
+
 .text_center {
     text-align: center;
 }
@@ -58,7 +66,7 @@ a, nav {
     color:white;
 }
 
-#submit_button{
+#submit_file_button, #submit_citation_button{
   background-color: #4CAF50;
   border: none;
   color: white;

@@ -42,7 +42,14 @@ function rotate(){
         <span id="fileSpan">No file chosen</span>
         <input type="file" id="file" name="file" class="center" style="color:white;">
       </div>
-      <input type="submit" id="submit_button" class="center" style="border-radius: 50px 20px;" onclick="rotate()">
+      <input type="submit" id="submit_file_button" class="center" style="border-radius: 50px 20px;" onclick="rotate()">
+    </form>
+    <br>
+    <form method="POST" enctype="text/plain">
+        <label for="citation" class="center_label">Citation:</label><br>
+        <textarea id="citation" class="center" rows="4" cols="50">Paste your citation string.</textarea>
+        <br><br>
+        <input type="submit" id="submit_citation_button" class="center" style="border-radius: 50px 20px;" onclick="rotate()" value="Submit">
     </form>
 </div>
 

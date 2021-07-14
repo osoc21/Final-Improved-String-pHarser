@@ -24,7 +24,7 @@ SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL,
     config={
-        'app_name': "Seans-Python-Flask-REST-Boilerplate"
+        'app_name': "Final-Improved-String-pHarser"
     }
 )
 api.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
@@ -116,7 +116,7 @@ def parse():
   # Step 1: figure out what kind of input is given
   content_type = request.headers.get("content-type")
   file_upload = False
-  
+
   if "text/plain" in content_type:
     input_type = "txt"
   if "csv" in content_type:
@@ -134,10 +134,6 @@ def parse():
       # If a non-supported format gets uploaded, return 422
       data = {"response": "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported."}
       return render_template('index.html', data=data), 422, {'Content-Type': 'text/html'}
-      return api.response_class(
-          response="The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.",
-          status=422  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422
-      )
   # If input type couldn't be determined, assume plaintext
   else:
     input_type = "txt"
@@ -219,6 +215,7 @@ def parse():
   threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
 
   print("Returning data...")
+  print(json.loads(data))
   return render_template("response.html", data={"model": used_model, "data": json.loads(data)})
 
 def remove_files(files):
