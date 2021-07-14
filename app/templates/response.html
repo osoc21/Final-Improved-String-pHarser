@@ -57,6 +57,7 @@ function rotate(){
 
 
     <script type="text/javascript">
+        var data = JSON.parse('{{ data | tojson }}');
         function handleSelectChange() {
             const form = document.getElementById("citation-change-form");
             form.innerHTML= ""
