@@ -132,6 +132,8 @@ def parse():
       input_type = "txt"
     else:
       # If a non-supported format gets uploaded, return 422
+      data = {"response": "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported."}
+      return render_template('index.html', data=data), 422, {'Content-Type': 'text/html'}
       return api.response_class(
           response="The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.",
           status=422  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422
@@ -217,10 +219,7 @@ def parse():
   threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
 
   print("Returning data...")
-  return {
-    "model": used_model,
-    "data": json.loads(data)
-  }
+  return render_template("response.html", data={"model": used_model, "data": json.loads(data)})
 
 def remove_files(files):
   for file in files:

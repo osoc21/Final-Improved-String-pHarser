@@ -32,18 +32,20 @@ function rotate(){
   </nav>
 </div>
 <div class="center">
-    {% if data %}
-      <p class="text_center error_message">{{data.response}}</p>
-    {% endif %}
-    <form method="POST" enctype="multipart/form-data">
-      <div id="fileButtonDiv" class="file-button">
-        <!-- type=button is essential, otherwise it'll submit by default -->
-        <button type="button" id="fileButton">Choose File</button>
-        <span id="fileSpan">No file chosen</span>
-        <input type="file" id="file" name="file" class="center" style="color:white;">
-      </div>
-      <input type="submit" id="submit_button" class="center" style="border-radius: 50px 20px;" onclick="rotate()">
-    </form>
+
+    <!--<textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea>-->
+    <pre><code><textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea></code></pre>
+    <br>
+    <button type="button" id="save" title="Save as JSON file" class="center">Save as JSON file</button>
+
+    <script type="text/javascript">
+        // when document is ready
+        document.getElementById("save").onclick = function() {
+            // when clicked the button
+            // a [save as] dialog will be shown
+            window.open("data:application/txt," + "parsedCitations.json", "_self");
+        }
+    </script>
 </div>
 
 

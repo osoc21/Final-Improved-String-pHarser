@@ -31,6 +31,10 @@ body {
     text-align: center;
 }
 
+.error_message {
+    color: red;
+}
+
 body {
   background-image: url("../assets/background.jpg");
   background-repeat: no-repeat;
