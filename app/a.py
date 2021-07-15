@@ -72,9 +72,12 @@ def get_contact_page():
 
 
 def index_error(err_code, message):
-  data = {"response": message}
+  data = {"response": message, "type": "error"}
   return render_template('index.html', data=data), err_code, {'Content-Type': 'text/html'}
 
+def index_success(success_code, success_msg):
+  data = {"response": success_msg, "type": "success"}
+  return render_template('index.html', data=data), success_code, {'Content-Type': 'text/html'}
 
 """
 save_data_to_tmp uses its parameters to save the POST data to a random filename,
@@ -147,15 +150,18 @@ For the form:
     ...
 
 """
+CITATION_STRING_CONST = "citationstring"
+
 @api.route('/parse', methods=['POST'])
 def parse():
   # Step 1: figure out what kind of input is given
   content_type = request.headers.get("content-type")
 
-
-  if "text/plain" in content_type:
+  if "multipart/form-data" in content_type:
+    input_type = "form"
+  elif "text/plain" in content_type:
     input_type = "txt"
-  if "csv" in content_type:
+  elif "csv" in content_type:
     input_type = "csv"
   # If a form is used to send a file
   elif len(request.files) >= 1:
@@ -194,7 +200,7 @@ def parse():
   From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input
   """
   
-  input_filename = save_data_to_tmp(request, input_type, "citationstring")
+  input_filename = save_data_to_tmp(request, input_type, CITATION_STRING_CONST)
   input_filenames = [input_filename]  # List of filenames to clean later
 
   """ 
@@ -236,6 +242,10 @@ def parse():
   data = json.loads(data)
 
   threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
+
+  if request.form and CITATION_STRING_CONST not in request.form:
+    # TODO: retrain model here
+    return index_success(200, "Successfully updated model. Thank you for your contribution")
 
   if len(data) <= 0:
       return index_error(422, "No data found in input")

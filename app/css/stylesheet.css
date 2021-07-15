@@ -45,6 +45,12 @@ body {
     border-radius: 5px;
 }
 
+.success_message {
+    color: green;
+    background: rgba(0,0,0,.5);
+    border-radius: 5px;
+}
+
 body {
   background-image: url("../assets/background.jpg");
   background-repeat: no-repeat;
