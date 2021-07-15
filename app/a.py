@@ -75,6 +75,36 @@ def index_error(err_code, message):
   data = {"response": message}
   return render_template('index.html', data=data), err_code, {'Content-Type': 'text/html'}
 
+
+"""
+save_data_to_tmp uses its parameters to save the POST data to a random filename,
+returning the filename afterwards
+
+request: the request object
+ext: the extension to save the file as
+form_input_name: the name of the form input to get data from
+"""
+# Pass the request object,  the extension and 
+def save_data_to_tmp(request, ext, form_input_name):
+  # To ensure no duplicate filenames, use headers to create a filename
+  # This will give issues if two people upload two files with the exact same size on the exact same second
+  # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
+  temp_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + ext
+ 
+  # If a string was directly given (no direct file upload), save it to a file
+  if len(request.files) <= 0:
+    # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
+    # Either get from form or from request data
+    data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
+  
+    file_from_string = open(temp_filename, "w", encoding="utf-8")
+    file_from_string.write(data)
+    file_from_string.close()
+  else:
+    # If a file is getting uploaded, save it as well
+    request.files['file'].save(temp_filename)
+  return temp_filename
+
 """
 Parse citation strings from plain text, with one citation per line. This is the most ideal method
 
@@ -121,7 +151,6 @@ For the form:
 def parse():
   # Step 1: figure out what kind of input is given
   content_type = request.headers.get("content-type")
-  file_upload = False
 
 
   if "text/plain" in content_type:
@@ -130,7 +159,6 @@ def parse():
     input_type = "csv"
   # If a form is used to send a file
   elif len(request.files) >= 1:
-    file_upload = True
     old_filename = request.files['file'].filename.lower()
     # Check for allowed formats
     if old_filename.endswith("csv"):
@@ -166,25 +194,8 @@ def parse():
   From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input
   """
   
-  # To ensure no duplicate filenames, use headers to create a filename
-  # This will give issues if two people upload two files with the exact same size on the exact same second
-  # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
-  input_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + input_type
+  input_filename = save_data_to_tmp(request, input_type, "citationstring")
   input_filenames = [input_filename]  # List of filenames to clean later
- 
-  # If a string was directly given, save it to a file
-  if not file_upload:
-    # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
-    # Either get from form or from request data    
-    data = request.form.get("citationstring", request.get_data().decode("utf-8"))
-  
-    file_from_string = open(input_filename, "w", encoding="utf-8")
-    file_from_string.write(data)
-    file_from_string.close()
-  else:
-    # If a file is getting uploaded, save it as well
-    request.files['file'].save(input_filename)
-  
 
   """ 
   Example of a line as provided in a .csv file by VLIZ:
@@ -335,6 +346,33 @@ def select_model(model_name):
   else:
     raise FileNotFoundError
 
+
+@api.route('/train', methods=['POST'])
+def train():
+  content_type = request.headers.get("content-type")
+
+  # XML -> train_and_check
+  if "xml" in content_type:
+    input_type = "xml"
+    sh = model_folder_path.rglob("train_and_check.sh")
+  # CSV -> train_year_models
+  if "csv" in content_type:
+    input_type = "csv"
+    sh = model_folder_path.rglob("train_year_models.sh")
+  
+  print(sh)
+
+  input_filename = random_temp_filename(request, input_type)
+
+  data = request.get_data()
+  if data:
+    print("Data")
+    utf8_data_to_file(data=data, filename=input_filename)
+  else:
+    print("No data")
+
+  
+  subprocess.check_output(sh, shell=True),
 
 
 # Serve CSS until it's handled by something else
