@@ -77,7 +77,7 @@ def index_error(err_code, message):
 
 
 """
-save_data_to_tmp uses its parameters to save the POST data to a random filename,
+save_data_to_file uses its parameters to save the POST data to a random filename,
 returning the filename afterwards
 
 request: the request object
@@ -194,7 +194,7 @@ def parse():
   From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input
   """
   
-  input_filename = save_data_to_tmp(request, input_type, "citationstring")
+  input_filename = save_data_to_file(request, input_type, "citationstring")
   input_filenames = [input_filename]  # List of filenames to clean later
 
   """ 
@@ -350,31 +350,51 @@ def select_model(model_name):
 @api.route('/train', methods=['POST'])
 def train():
   content_type = request.headers.get("content-type")
+  model_name = request.headers.get("model-name")
+  overwrite = header_boolean(request.headers.get("overwrite"), default=False)
+
+  # Lowercase and secure model name
+  model_name = model_name.lower().rstrip(".mod")
 
   # XML -> train_and_check
   if "xml" in content_type:
+    print("xml")
     input_type = "xml"
     sh = model_folder_path.rglob("train_and_check.sh")
   # CSV -> train_year_models
   if "csv" in content_type:
+    print("csv")
     input_type = "csv"
     sh = model_folder_path.rglob("train_year_models.sh")
   
   sh = str(next(sh))
+
+  model_path = model_folder + "/data/models/" + model_name + ".mod"
+
+  # Make sure the path exists
+  #pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)  # https://stackoverflow.com/a/273227
+
+  model_exists = os.path.exists(model_path)
   
+
+  if not overwrite and model_exists:
+    return index_error(403, "Model already exists, and header 'overwrite' not set to True")
+  if overwrite and model_exists:
+    # TODO APPEND!!
+    # TODO perhaps temporarily mv, in case of failure
+    os.remove(model_path)
+    
   input_filename = save_data_to_tmp(request, input_type)
-  print(input_filename)
 
   command = sh + " " + input_filename
 
   if input_type == "xml":
-    command += " " + "model/data/models" + os.path.basename(input_filename) + ".mod"
+    command += " " + "model/data/models/" + model_name + ".mod"
+
 
   output = subprocess.check_output(command, shell=True)
 
-
-
-  return 
+  return output
 
 
 # Serve CSS until it's handled by something else
