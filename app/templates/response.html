@@ -139,11 +139,22 @@ function rotate(){
 
         }
 
+        // Download the JSON as a json file
         // when document is ready
+        // SOURCE: https://stackoverflow.com/questions/2897619/using-html5-javascript-to-generate-and-save-a-file/21677860
         document.getElementById("save").onclick = function() {
-            // when clicked the button
-            // a [save as] dialog will be shown
-            window.open("data:application/txt," + JSON.stringify(data),"_self");
+            const pom = document.createElement('a');
+            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(data)));
+            pom.setAttribute('download', "result.json");
+
+            if (document.createEvent) {
+                const event = document.createEvent('MouseEvents');
+                event.initEvent('click', true, true);
+                pom.dispatchEvent(event);
+            }
+            else {
+                pom.click();
+            }
         }
     </script>
 </div>
