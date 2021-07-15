@@ -241,10 +241,9 @@ def parse():
       return index_error(422, "No data found in input")
 
   print("Returning data...")
-  print(json.loads(data))
   return_data = {
     "model": used_model,
-    "data": json.loads(data)
+    "data": data
   }
 
   # If sent using a regular request, just return the JSON file
