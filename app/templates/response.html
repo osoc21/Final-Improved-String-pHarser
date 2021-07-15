@@ -45,17 +45,15 @@ function rotate(){
             <option value="" disabled selected>Select citation</option>
             {% set longestPartsLengths = [] %}
             {% for citation in data.data %}
-                {% set longest = 0 %}
-                {% set longestns = namespace(longest=0) %}
+                {% set longest = namespace(value=0) %}
                 {% for key, value in citation.items() %}
                     {% if value is not none %}
-                        {% if value[0]|length > longestns.longest %}
-                            {% set longest = value[0]|length %}
-                                {% set longestns.longest = value[0]|length %}
+                        {% if value[0]|length > longest.value %}
+                            {% set longest.value = value[0]|length %}
                         {% endif %}
                     {% endif %}
                 {% endfor %}
-                {{  longestPartsLengths.append(longestns.longest) }}
+                {{  longestPartsLengths.append(longest.value) }}
             {% endfor %}
 
             {% set count = namespace(value=0) %}
