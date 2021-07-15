@@ -90,7 +90,9 @@ function rotate(){
                 "City","Volume","Issue","Pagination","DOI"];
 
             const e = document.getElementById("citations-select");
-            const citation_index = e.selectedIndex;
+
+            // -1 due to selection placeholder at first index
+            const citation_index = e.selectedIndex - 1;
 
             const textNode = document.createElement("p");
             textNode.innerHTML = "Correct mistakes";
