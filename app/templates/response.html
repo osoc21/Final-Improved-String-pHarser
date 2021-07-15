@@ -39,14 +39,36 @@ function rotate(){
     <br>
     <button type="button" id="save" title="Save as JSON file" class="center">Save as JSON file</button>
     <p>Correct mistakes</p>
+
     <form>
         <label for="citations-select" class="text_center">Choose a citation:</label>
         <select name="citations" id="citations-select" onchange="handleSelectChange()" >
-            {% for item in data.data %}
-                {% if item.Authors is defined %}
-                    <option value={{item.Authors[0]}} >{{item.Authors[0]}}</option>
-                {% endif %}}
+            {% set longestPartsLengths = [] %}
+            {% for citation in data.data %}
+                {% set longest = 0 %}
+                {% set longestns = namespace(longest=0) %}
+                {% for key, value in citation.items() %}
+                    {% if value is not none %}
+                        {% if value[0]|length > longestns.longest %}
+                            {% set longest = value[0]|length %}
+                                {% set longestns.longest = value[0]|length %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                {{  longestPartsLengths.append(longestns.longest) }}
             {% endfor %}
+
+            {% set count = namespace(value=0) %}
+            {% for citation in data.data %}
+                {% for key, value in citation.items() %}
+                    {% if value is not none %}
+                        {% if value[0]|length == longestPartsLengths[count.value]%}
+                            <option value={{value}} id={{citation}}>{{value[0]}}</option>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                {% set count.value = count.value + 1 %}
+            {%endfor%}
         </select>
         <p id="selection-par">Please select a citation to edit</p>
       <br><br>
@@ -57,14 +79,21 @@ function rotate(){
 
 
     <script type="text/javascript">
-        var data = JSON.parse('{{ data | tojson }}');
+        const data = JSON.parse('{{ data | tojson }}');
+        //console.log(data.data[i][field][0])
+        console.log("data", data)
         function handleSelectChange() {
             const form = document.getElementById("citation-change-form");
+
             form.innerHTML= ""
 
             const fields = ["Authors","Year","Title","Book","Series","Publisher",
                 "City","Volume","Issue","Pagination","DOI"];
-
+            var e = document.getElementById("citations-select");
+            var strUser = e.options[e.selectedIndex].text;
+            console.log(e.selectedIndex)
+                        const citation_index = e.selectedIndex;
+            console.log(data)
             fields.forEach(field => {
                 const node = document.createElement("label");
                 node.setAttribute("for", field);
@@ -75,6 +104,17 @@ function rotate(){
                 inputNode.setAttribute("type", "text")
                 inputNode.setAttribute("id", field)
                 inputNode.setAttribute("name", field)
+                /*fields.forEach(field => {
+                    if (field in data.data[citation_index]) {
+                        inputNode.setAttribute("id", field)
+                        inputNode.setAttribute("name", field)
+
+                    }
+                });*/
+
+                if (field in data.data[citation_index]) {
+                    inputNode.setAttribute("value", data.data[citation_index][field][0])
+                }
 
                 document.getElementById("citation-change-form").appendChild(node);
                 let brNode = document.createElement("br");
