@@ -85,7 +85,7 @@ ext: the extension to save the file as
 form_input_name: the name of the form input to get data from
 """
 # Pass the request object,  the extension and 
-def save_data_to_tmp(request, ext, form_input_name):
+def save_data_to_tmp(request, ext, form_input_name=None):
   # To ensure no duplicate filenames, use headers to create a filename
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
@@ -360,19 +360,21 @@ def train():
     input_type = "csv"
     sh = model_folder_path.rglob("train_year_models.sh")
   
-  print(sh)
-
-  input_filename = random_temp_filename(request, input_type)
-
-  data = request.get_data()
-  if data:
-    print("Data")
-    utf8_data_to_file(data=data, filename=input_filename)
-  else:
-    print("No data")
-
+  sh = str(next(sh))
   
-  subprocess.check_output(sh, shell=True),
+  input_filename = save_data_to_tmp(request, input_type)
+  print(input_filename)
+
+  command = sh + " " + input_filename
+
+  if input_type == "xml":
+    command += " " + "model/data/models" + os.path.basename(input_filename) + ".mod"
+
+  output = subprocess.check_output(command, shell=True)
+
+
+
+  return 
 
 
 # Serve CSS until it's handled by something else
