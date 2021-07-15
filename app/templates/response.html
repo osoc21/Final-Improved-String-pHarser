@@ -79,9 +79,9 @@ function rotate(){
 
 
     <script type="text/javascript">
+
         const data = JSON.parse('{{ data | tojson }}');
-        //console.log(data.data[i][field][0])
-        console.log("data", data)
+
         function handleSelectChange() {
             const form = document.getElementById("citation-change-form");
 
@@ -89,11 +89,10 @@ function rotate(){
 
             const fields = ["Authors","Year","Title","Book","Series","Publisher",
                 "City","Volume","Issue","Pagination","DOI"];
-            var e = document.getElementById("citations-select");
-            var strUser = e.options[e.selectedIndex].text;
-            console.log(e.selectedIndex)
-                        const citation_index = e.selectedIndex;
-            console.log(data)
+
+            const e = document.getElementById("citations-select");
+            const citation_index = e.selectedIndex;
+
             fields.forEach(field => {
                 const node = document.createElement("label");
                 node.setAttribute("for", field);
@@ -104,13 +103,6 @@ function rotate(){
                 inputNode.setAttribute("type", "text")
                 inputNode.setAttribute("id", field)
                 inputNode.setAttribute("name", field)
-                /*fields.forEach(field => {
-                    if (field in data.data[citation_index]) {
-                        inputNode.setAttribute("id", field)
-                        inputNode.setAttribute("name", field)
-
-                    }
-                });*/
 
                 if (field in data.data[citation_index]) {
                     inputNode.setAttribute("value", data.data[citation_index][field][0])
@@ -124,6 +116,11 @@ function rotate(){
                 document.getElementById("citation-change-form").appendChild(brNode);
 
             })
+
+            const submitNode = document.createElement("input")
+            submitNode.setAttribute("type", "submit")
+            submitNode.setAttribute("value", "submit")
+            document.getElementById("citation-change-form").appendChild(submitNode);
 
         }
 
