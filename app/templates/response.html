@@ -38,11 +38,11 @@ function rotate(){
     <pre><code><textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea></code></pre>
     <br>
     <button type="button" id="save" title="Save as JSON file" class="center">Save as JSON file</button>
-    <p>Correct mistakes</p>
-
+    <p id="selection-par">Please select a citation to edit</p>
     <form>
-        <label for="citations-select" class="text_center">Choose a citation:</label>
-        <select name="citations" id="citations-select" onchange="handleSelectChange()" >
+        <p class="text_center"><label for="citations-select" class="text_center">Choose a citation:</label></p>
+        <select class="center" name="citations" id="citations-select" onchange="handleSelectChange()" >
+            <option value="" disabled selected>Select citation</option>
             {% set longestPartsLengths = [] %}
             {% for citation in data.data %}
                 {% set longest = 0 %}
@@ -70,11 +70,10 @@ function rotate(){
                 {% set count.value = count.value + 1 %}
             {%endfor%}
         </select>
-        <p id="selection-par">Please select a citation to edit</p>
       <br><br>
     </form>
+
     <form id="citation-change-form">
-      <input type="submit" value="Submit" id="change_input">
     </form>
 
 
@@ -91,35 +90,53 @@ function rotate(){
                 "City","Volume","Issue","Pagination","DOI"];
 
             const e = document.getElementById("citations-select");
-            const citation_index = e.selectedIndex;
+
+            // -1 due to selection placeholder at first index
+            const citation_index = e.selectedIndex - 1;
+
+            const textNode = document.createElement("p");
+            textNode.innerHTML = "Correct mistakes";
+            document.getElementById("citation-change-form").prepend(textNode);
 
             fields.forEach(field => {
-                const node = document.createElement("label");
-                node.setAttribute("for", field);
-                node.style.color = "white";
-                node.innerText = field;
+
+                const divNode = document.createElement("div");
+                divNode.setAttribute("margin-bottom", "10px")
+
+                const labelNode = document.createElement("label");
+                labelNode.setAttribute("for", field);
+                labelNode.style.color = "white";
+                labelNode.innerText = field;
+                labelNode.style.fontSize = "30px"
+                divNode.style.textAlign = "center"
 
                 const inputNode = document.createElement("input");
                 inputNode.setAttribute("type", "text")
                 inputNode.setAttribute("id", field)
                 inputNode.setAttribute("name", field)
+                inputNode.setAttribute("class", "center")
+                inputNode.setAttribute("size", "100")
 
                 if (field in data.data[citation_index]) {
                     inputNode.setAttribute("value", data.data[citation_index][field][0])
                 }
 
-                document.getElementById("citation-change-form").appendChild(node);
+                document.getElementById("citation-change-form").appendChild(divNode);
+
+                divNode.appendChild(labelNode);
                 let brNode = document.createElement("br");
-                document.getElementById("citation-change-form").appendChild(brNode);
-                document.getElementById("citation-change-form").appendChild(inputNode);
+                divNode.appendChild(brNode);
+                divNode.appendChild(inputNode);
                 brNode = document.createElement("br");
-                document.getElementById("citation-change-form").appendChild(brNode);
+                divNode.appendChild(brNode);
 
             })
 
             const submitNode = document.createElement("input")
             submitNode.setAttribute("type", "submit")
-            submitNode.setAttribute("value", "submit")
+            submitNode.setAttribute("value", "Retrain model")
+            submitNode.setAttribute("id", "submit_retrain_button")
+            submitNode.setAttribute("class", "center")
             document.getElementById("citation-change-form").appendChild(submitNode);
 
         }
