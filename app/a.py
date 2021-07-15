@@ -72,12 +72,15 @@ def get_contact_page():
 
 
 def index_error(err_code, message):
-  data = {"response": message}
+  data = {"response": message, "type": "error"}
   return render_template('index.html', data=data), err_code, {'Content-Type': 'text/html'}
 
+def index_success(success_code, success_msg):
+  data = {"response": success_msg, "type": "success"}
+  return render_template('index.html', data=data), success_code, {'Content-Type': 'text/html'}
 
 """
-save_data_to_tmp uses its parameters to save the POST data to a random filename,
+save_data_to_file uses its parameters to save the POST data to a random filename,
 returning the filename afterwards
 
 request: the request object
@@ -85,7 +88,7 @@ ext: the extension to save the file as
 form_input_name: the name of the form input to get data from
 """
 # Pass the request object,  the extension and 
-def save_data_to_tmp(request, ext, form_input_name):
+def save_data_to_tmp(request, ext, form_input_name=None):
   # To ensure no duplicate filenames, use headers to create a filename
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
@@ -147,15 +150,18 @@ For the form:
     ...
 
 """
+CITATION_STRING_CONST = "citationstring"
+
 @api.route('/parse', methods=['POST'])
 def parse():
   # Step 1: figure out what kind of input is given
   content_type = request.headers.get("content-type")
 
-
-  if "text/plain" in content_type:
+  if "multipart/form-data" in content_type:
+    input_type = "form"
+  elif "text/plain" in content_type:
     input_type = "txt"
-  if "csv" in content_type:
+  elif "csv" in content_type:
     input_type = "csv"
   # If a form is used to send a file
   elif len(request.files) >= 1:
@@ -194,7 +200,7 @@ def parse():
   From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input
   """
   
-  input_filename = save_data_to_tmp(request, input_type, "citationstring")
+  input_filename = save_data_to_tmp(request, input_type, CITATION_STRING_CONST)
   input_filenames = [input_filename]  # List of filenames to clean later
 
   """ 
@@ -236,6 +242,10 @@ def parse():
   data = json.loads(data)
 
   threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
+
+  if request.form and CITATION_STRING_CONST not in request.form:
+    # TODO: retrain model here
+    return index_success(200, "Successfully updated model. Thank you for your contribution")
 
   if len(data) <= 0:
       return index_error(422, "No data found in input")
@@ -350,29 +360,51 @@ def select_model(model_name):
 @api.route('/train', methods=['POST'])
 def train():
   content_type = request.headers.get("content-type")
+  model_name = request.headers.get("model-name")
+  overwrite = header_boolean(request.headers.get("overwrite"), default=False)
+
+  # Lowercase and secure model name
+  model_name = model_name.lower().rstrip(".mod")
 
   # XML -> train_and_check
   if "xml" in content_type:
+    print("xml")
     input_type = "xml"
     sh = model_folder_path.rglob("train_and_check.sh")
   # CSV -> train_year_models
   if "csv" in content_type:
+    print("csv")
     input_type = "csv"
     sh = model_folder_path.rglob("train_year_models.sh")
   
-  print(sh)
+  sh = str(next(sh))
 
-  input_filename = random_temp_filename(request, input_type)
+  model_path = model_folder + "/data/models/" + model_name + ".mod"
 
-  data = request.get_data()
-  if data:
-    print("Data")
-    utf8_data_to_file(data=data, filename=input_filename)
-  else:
-    print("No data")
+  # Make sure the path exists
+  #pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)  # https://stackoverflow.com/a/273227
 
+  model_exists = os.path.exists(model_path)
   
-  subprocess.check_output(sh, shell=True),
+
+  if not overwrite and model_exists:
+    return index_error(403, "Model already exists, and header 'overwrite' not set to True")
+  if overwrite and model_exists:
+    # TODO APPEND!!
+    # TODO perhaps temporarily mv, in case of failure
+    os.remove(model_path)
+    
+  input_filename = save_data_to_tmp(request, input_type)
+
+  command = sh + " " + input_filename
+
+  if input_type == "xml":
+    command += " " + "model/data/models/" + model_name + ".mod"
+
+
+  output = subprocess.check_output(command, shell=True)
+
+  return output
 
 
 # Serve CSS until it's handled by something else
