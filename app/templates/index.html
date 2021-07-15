@@ -33,7 +33,12 @@ function rotate(){
 </div>
 <div class="center">
     {% if data %}
-      <p class="text_center error_message">{{data.response}}</p>
+      {% if data.type == 'error' %}
+         <p class="text_center error_message">{{data.response}}</p>
+      {% endif %}
+      {% if data.type == 'success' %}
+         <p class="text_center success_message">{{data.response}}</p>
+      {% endif %}
     {% endif %}
     <form method="POST" enctype="multipart/form-data">
       <div id="fileButtonDiv" class="file-button">
