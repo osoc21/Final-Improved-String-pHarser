@@ -51,6 +51,11 @@ flask run
 ### Python changes
 If you've added any modules/packages, I recommend using [pipreqs](https://pypi.org/project/pipreqs/) to automatically update the requirements.txt. Simply run `pipreqs --force` before committing and you're done!
 
+Docker with mounting:
+```bash
+docker run -p 5000:5000 --mount type=bind,src="$(pwd)/app",target=/app --mount type=bind,src="$(pwd)/model",target=/app/model fish 
+```
+
 
 ## Credits
 ...
