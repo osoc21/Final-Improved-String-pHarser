@@ -108,7 +108,7 @@ for line in csv_reader:
                                 # print("Predicted" + citationKey + " : " + str(predicted))
                                 mismatchesYear += 1
                                 mistakesMapYearModel[citationKey] += 1
-                        else:
+                        elif expected != "":
                             errorsYear += 1
                             errorsMapYearModel[citationKey] += 1
 
@@ -121,7 +121,7 @@ for line in csv_reader:
                             if expected != predictedBase:
                                 mismatchesBase += 1
                                 mistakesMapFullModel[citationKey] += 1
-                        else:
+                        elif expected != "":
                             errorsBase += 1
                             errorsMapFullModel[citationKey] += 1
                 outputJsonYear = json.loads(output)
