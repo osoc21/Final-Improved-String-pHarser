@@ -4,6 +4,9 @@
     <base href="../">
   <link rel="stylesheet" href="css/stylesheet.css">
   <link href='https://fonts.googleapis.com/css?family=Amatic SC' rel='stylesheet'>
+  <script src="path/to/jquery.js"></script>
+  <script src="path/to/jquery.nice-select.js"></script>
+  <link rel="stylesheet" href="path/to/nice-select.css">
 </head>
 
 <body>
@@ -37,7 +40,7 @@ function rotate(){
     <!--<textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea>-->
     <pre><code><textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea></code></pre>
     <br>
-    <button type="button" id="save" title="Save as JSON file" class="center">Save as JSON file</button>
+    <input type="submit" id="save" title="Save as JSON file" class="center">Save as JSON file</input>
     <p id="selection-par">Please select a citation to edit</p>
     <form>
         <p class="text_center"><label for="citations-select" class="text_center">Choose a citation:</label></p>
@@ -99,13 +102,12 @@ function rotate(){
             let original_citation = ""
             fields.forEach(field => {
                 if (field in data.data[citation_index]) {
-
                     original_citation += data.data[citation_index][field][0]
                 }
             })
             textNode = document.createElement("p");
             textNode.innerHTML = original_citation;
-            console.log(data.data)
+
             document.getElementById("citation-change-form").prepend(textNode);
 
             textNode = document.createElement("p");
