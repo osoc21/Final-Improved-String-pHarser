@@ -74,17 +74,6 @@ a, nav {
     color:white;
 }
 
-#submit_file_button, #submit_citation_button, #submit_retrain_button {
-  background-color: #4CAF50;
-  border: none;
-  color: white;
-  padding: 32px 144px;
-  text-decoration: none;
-  cursor: pointer;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .upload-btn-wrapper {
   position: relative;
   overflow: hidden;
@@ -146,4 +135,39 @@ a, nav {
     right:0;
     font-size: 30px;
 
+}
+
+textarea {
+	display: block;
+    background: #e6e6e6;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #666;
+    min-height: 150px;
+    border-radius: 25px;
+    padding: 12px 30px;
+}
+
+input[type=text], select {
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=submit] {
+  background-color: #4CAF50;
+  color: white;
+  padding: 32px 144px;
+  margin-left: auto;
+  margin-right: auto;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
 }
