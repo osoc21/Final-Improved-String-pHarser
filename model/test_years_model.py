@@ -45,96 +45,86 @@ total_examples = sum(1 for row in csv_reader)
 nb = 1
 test_csv_file.seek(0)
 for line in csv_reader:
-    try:
-        line_nb += 1
-        year = 0
-        if outputJsonBase[line_nb]["Year"] is not None:
-            year = outputJsonBase[line_nb]["Year"][0]
-            year = re.sub(r'[^A-Za-z0-9 ]+', '', year)
-        totalParts = 0
-        mismatchesYear = 0
-        mismatchesBase = 0
+    line_nb += 1
+    year = 0
+    if "Year" in outputJsonBase[line_nb] and outputJsonBase[line_nb]["Year"] is not None:
+        year = outputJsonBase[line_nb]["Year"][0]
+        year = re.sub(r'[^A-Za-z0-9 ]+', '', year)
+    totalParts = 0
+    mismatchesYear = 0
+    mismatchesBase = 0
 
-        errorsYear = 0
-        errorsBase = 0
+    errorsYear = 0
+    errorsBase = 0
 
-        for file_name in file_names:
-            year_range = file_name.split(".")[0].split("-")
+    for file_name in file_names:
+        year_range = file_name.split(".")[0].split("-")
 
-            if year_range[0] <= year <= year_range[1]:
-                output = subprocess.check_output('anystyle -P ' + YEARS_MODELS_PATH + file_name +
-                                                 ' -f json parse ' +
-                                                 test_xml_file_name,
-                                                 shell=True)
-                outputJsonYear = json.loads(output)
+        if year_range[0] <= year <= year_range[1]:
+            output = subprocess.check_output('anystyle -P ' + YEARS_MODELS_PATH + file_name +
+                                             ' -f json parse ' +
+                                             test_xml_file_name,
+                                             shell=True)
+            outputJsonYear = json.loads(output)
 
-                for citationKey in columns:
-                    try:
-                        if citationKey != "String" and line[citationKey] != "":
-                            totalParts += 1
-                    except KeyError:
-                        pass
-                    try:
-                        expected = line[citationKey]
+            for citationKey in columns:
+                if citationKey in line and citationKey != "String" and line[citationKey] != "":
+                    totalParts += 1
+                if citationKey in line:
+                    expected = line[citationKey]
 
-                        expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
+                    expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
 
-                        if expected != "":
-                            try:
-                                predicted = outputJsonYear[line_nb-1][citationKey][0]
-                                predicted = re.sub(r'[^A-Za-z0-9 ]+', '', predicted)
-                                if expected != predicted:
-                                    # print("Expected" + citationKey + " : " + str(expected))
-                                    # print("Predicted" + citationKey + " : " + str(predicted))
-                                    mismatchesYear += 1
-                            except KeyError:
-                                errorsYear += 1
-                    except KeyError:
-                        pass
-                    try:
-                        expected = line[citationKey]
-                        expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
-                        if expected != "":
-                            try:
-                                predictedBase = outputJsonBase[line_nb][citationKey][0]
-                                predictedBase = re.sub(r'[^A-Za-z0-9 ]+', '', predictedBase)
-                                if expected != predictedBase:
-                                    mismatchesBase += 1
-                            except KeyError:
-                                errorsBase += 1
-                    except KeyError:
-                        pass
-                outputJsonYear = json.loads(output)
+                    if expected != "" and citationKey in outputJsonYear[line_nb - 1]:
+                        predicted = outputJsonYear[line_nb-1][citationKey][0]
+                        predicted = re.sub(r'[^A-Za-z0-9 ]+', '', predicted)
+                        if expected != predicted:
+                            # print("Expected" + citationKey + " : " + str(expected))
+                            # print("Predicted" + citationKey + " : " + str(predicted))
+                            mismatchesYear += 1
+                    else:
+                        errorsYear += 1
 
-        print("========= Year model ==========")
-        print(f"Total citation parts {totalParts}")
-        print(f"Total mismatched parts {mismatchesYear}")
-        print(f"Total missing parts {errorsYear}")
-        if totalParts > 0:
-            mismatchedRatioYears.append(mismatchesYear/totalParts)
-            missingRatioYears.append(errorsYear/totalParts)
+                if citationKey in line:
+                    expected = line[citationKey]
+                    expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
+                    if expected != "" and citationKey in outputJsonBase[line_nb]:
+                        predictedBase = outputJsonBase[line_nb][citationKey][0]
+                        predictedBase = re.sub(r'[^A-Za-z0-9 ]+', '', predictedBase)
+                        if expected != predictedBase:
+                            mismatchesBase += 1
+                    else:
+                        errorsBase += 1
+            outputJsonYear = json.loads(output)
 
-        print("========= Full model ==========")
-        print(f"Total citation parts {totalParts}")
-        print(f"Total mismatched parts {mismatchesBase}")
-        print(f"Total missing parts {errorsBase}")
-        if totalParts > 0:
-            mismatchedRatioBase.append(mismatchesBase/totalParts)
-            missingRatioBase.append(errorsBase/totalParts)
+    print("========= Year model ==========")
+    print(f"Total citation parts {totalParts}")
+    print(f"Total mismatched parts {mismatchesYear}")
+    print(f"Total missing parts {errorsYear}")
+    if totalParts > 0:
+        mismatchedRatioYears.append(mismatchesYear/totalParts)
+        missingRatioYears.append(errorsYear/totalParts)
 
-        print("========= Progress ==========")
-        print(str(line_nb/total_examples * 100) + "%")
-        if len(missingRatioYears) > 1:
-            print("========= Statistics ==========")
+    print("========= Full model ==========")
+    print(f"Total citation parts {totalParts}")
+    print(f"Total mismatched parts {mismatchesBase}")
+    print(f"Total missing parts {errorsBase}")
+    if totalParts > 0:
+        mismatchedRatioBase.append(mismatchesBase/totalParts)
+        missingRatioBase.append(errorsBase/totalParts)
 
-            print(f"Mismatched ratio years model {statistics.mean(mismatchedRatioYears)}")
-            print(f"Missing ratio years model {statistics.mean(missingRatioYears)}")
+    print("========= Progress ==========")
+    print(str(line_nb/total_examples * 100) + "%")
+    if len(missingRatioYears) > 1:
+        print("========= Statistics ==========")
 
-            print(f"Mismatched ratio base model {statistics.mean(mismatchedRatioBase)}")
-            print(f"Missing ratio base model {statistics.mean(missingRatioBase)}")
+        print(f"Mismatched ratio years model {statistics.mean(mismatchedRatioYears)}")
+        print(f"Missing ratio years model {statistics.mean(missingRatioYears)}")
 
-    except KeyError:
-        print("No year found in full model.")
+        print(f"Mismatched ratio base model {statistics.mean(mismatchedRatioBase)}")
+        print(f"Missing ratio base model {statistics.mean(missingRatioBase)}")
+
+
 
 
 
