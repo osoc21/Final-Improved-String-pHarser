@@ -79,6 +79,11 @@ def index_success(success_code, success_msg):
   data = {"response": success_msg, "type": "success"}
   return render_template('index.html', data=data), success_code, {'Content-Type': 'text/html'}
 
+def remove_in_background(filenames):
+  if type(filenames) == str:
+    filenames = [filenames] 
+  threading.Thread(target=remove_files, args=(filenames,)).start()  # , is important
+
 """
 save_data_to_file uses its parameters to save the POST data to a random filename,
 returning the filename afterwards
@@ -241,7 +246,7 @@ def parse():
 
   data = json.loads(data)
 
-  threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
+  remove_in_background(input_filenames)
 
   if request.form and CITATION_STRING_CONST not in request.form:
     # TODO: retrain model here
@@ -382,19 +387,34 @@ def train():
   model_path = model_folder + "/data/models/" + model_name + ".mod"
   model_exists = os.path.exists(model_path)
 
-  if not overwrite and model_exists:
-    return index_error(403, "Model already exists, and header 'overwrite' not set to True")
-  if overwrite and model_exists:
-    # TODO APPEND!!
-    # TODO perhaps temporarily mv, in case of failure
+  if model_exists:
+    shutil.copy2(model_path, model_path + ".bak")
+  
+  # Try to update the model
+  try:
+    if not overwrite and model_exists:
+      return index_error(403, "Model already exists, and header 'overwrite' not set to True")
+    elif overwrite and model_exists:
+      pass
+      
+    if overwrite and model_exists:
+      # TODO APPEND!!
+      os.remove(model_path)
+      
+
+    command = f'"{train_and_check}" "{input_filename}" "model/data/models/{model_name}.mod"'
+    output = subprocess.check_output(command, shell=True)
+
+    remove_in_background(model_path + ".bak")
+
+    return output
+  # On any crash, recover backup
+  except:
     os.remove(model_path)
-    
+    shutil.copy2(model_path + ".bak", model_path)
+    return index_error(500, "Internal error during train, recovered old model")
 
-  command = f'"{train_and_check}" "{input_filename}" "model/data/models/{model_name}.mod"'
-
-  output = subprocess.check_output(command, shell=True)
-
-  return output
+  
 
 
 # Serve CSS until it's handled by something else
