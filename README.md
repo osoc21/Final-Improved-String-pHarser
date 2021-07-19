@@ -53,7 +53,7 @@ If you've added any modules/packages, I recommend using [pipreqs](https://pypi.o
 
 Docker with mounting:
 ```bash
-docker run -p 5000:5000 --mount type=bind,src="$(pwd)/app",target=/app --mount type=bind,src="$(pwd)/model",target=/app/model fish 
+docker run -p 5000:5000 --mount type=bind,src="$(pwd)/app",target=/app --mount type=bind,src="$(pwd)/model",target=/app/model --mount type=bind,src="$(pwd)/temp",target=/app/temp fish 
 ```
 
 
