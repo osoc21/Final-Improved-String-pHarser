@@ -92,9 +92,26 @@ function rotate(){
             // -1 due to selection placeholder at first index
             const citation_index = e.selectedIndex - 1;
 
-            const textNode = document.createElement("p");
+            let textNode = document.createElement("p");
             textNode.innerHTML = "Correct mistakes";
             document.getElementById("citation-change-form").prepend(textNode);
+
+            let original_citation = ""
+            fields.forEach(field => {
+                if (field in data.data[citation_index]) {
+
+                    original_citation += data.data[citation_index][field][0]
+                }
+            })
+            textNode = document.createElement("p");
+            textNode.innerHTML = original_citation;
+            console.log(data.data)
+            document.getElementById("citation-change-form").prepend(textNode);
+
+            textNode = document.createElement("p");
+            textNode.innerHTML = "Original citation:";
+            document.getElementById("citation-change-form").prepend(textNode);
+
 
             fields.forEach(field => {
 
