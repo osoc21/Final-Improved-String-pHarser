@@ -156,6 +156,11 @@ For the form:
 
 """
 CITATION_STRING_CONST = "citationstring"
+@api.route('/retrain', methods=['POST'])
+def retrain():
+  if request.form and CITATION_STRING_CONST not in request.form:
+    # TODO: retrain model here
+    return index_success(200, "Successfully updated model. Thank you for your contribution")
 
 @api.route('/parse', methods=['POST'])
 def parse():
