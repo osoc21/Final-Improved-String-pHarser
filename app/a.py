@@ -362,7 +362,7 @@ def select_model(model_name):
     raise FileNotFoundError
 
 
-train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
+#train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
 @api.route('/train', methods=['POST'])
 def train():
   content_type = request.headers.get("content-type")
@@ -382,7 +382,7 @@ def train():
     input_type = "csv"
     input_csv = save_data_to_tmp(request, input_type)
     input_filename = input_csv.replace("csv", "xml")
-    print(subprocess.check_output(f'"{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
+    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
 
   model_path = model_folder + "/data/models/" + model_name + ".mod"
   model_exists = os.path.exists(model_path)
@@ -401,8 +401,7 @@ def train():
       # TODO APPEND!!
       os.remove(model_path)
       
-
-    command = f'"{train_and_check}" "{input_filename}" "model/data/models/{model_name}.mod"'
+    command = f'anystyle train "{input_filename}" "model/data/models/{model_name}.mod"'
     output = subprocess.check_output(command, shell=True)
 
     remove_in_background(model_path + ".bak")
@@ -410,6 +409,7 @@ def train():
     return output
   # On any crash, recover backup
   except:
+    print("Error during training")
     os.remove(model_path)
     shutil.copy2(model_path + ".bak", model_path)
     return index_error(500, "Internal error during train, recovered old model")
