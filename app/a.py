@@ -369,6 +369,8 @@ def train():
   model_name = request.headers.get("model-name")
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
 
+  input_filenames = []
+
   # Lowercase and secure model name
   model_name = model_name.lower().rstrip(".mod")
 
@@ -384,11 +386,16 @@ def train():
     input_filename = input_csv.replace("csv", "xml")
     print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
 
+    input_filenames.append(input_csv)
+  input_filenames.append(input_filename)
+  
+
   model_path = model_folder + "/data/models/" + model_name + ".mod"
   model_exists = os.path.exists(model_path)
 
   if model_exists:
     shutil.copy2(model_path, model_path + ".bak")
+    input_filenames.append(model_path + ".bak")
   
   # Try to update the model
   try:
@@ -404,15 +411,19 @@ def train():
     command = f'anystyle train "{input_filename}" "model/data/models/{model_name}.mod"'
     output = subprocess.check_output(command, shell=True)
 
-    remove_in_background(model_path + ".bak")
+    remove_in_background(input_filenames)
 
     return output
   # On any crash, recover backup
-  except:
+  except Exception as e:
     print("Error during training")
-    os.remove(model_path)
+    # Remove the new model if it exists
+    if os.path.exists(model_path):
+      os.remove(model_path)
     shutil.copy2(model_path + ".bak", model_path)
-    return index_error(500, "Internal error during train, recovered old model")
+
+    remove_in_background(input_filenames)
+    return index_error(500, e)
 
   
 
