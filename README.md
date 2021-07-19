@@ -6,6 +6,8 @@
 ## Installation
 
 ### Docker
+NOTE: for some reason, Docker on a windows host gave issues for parsing. If you're getting an ioctl/jsondecode error, do the good old Windows > WSL > Docker
+
 After installing Docker, all you have to do is build the dockerfile:
 ```bash
 $ sudo docker build -t fish .
