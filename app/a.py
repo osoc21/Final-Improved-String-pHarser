@@ -357,6 +357,7 @@ def select_model(model_name):
     raise FileNotFoundError
 
 
+train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
 @api.route('/train', methods=['POST'])
 def train():
   content_type = request.headers.get("content-type")
@@ -368,24 +369,18 @@ def train():
 
   # XML -> train_and_check
   if "xml" in content_type:
-    print("xml")
     input_type = "xml"
-    sh = model_folder_path.rglob("train_and_check.sh")
+    input_filename = save_data_to_tmp(request, input_type)
+
   # CSV -> train_year_models
   if "csv" in content_type:
-    print("csv")
     input_type = "csv"
-    sh = model_folder_path.rglob("train_year_models.sh")
-  
-  sh = str(next(sh))
+    input_csv = save_data_to_tmp(request, input_type)
+    input_filename = input_csv.replace("csv", "xml")
+    print(subprocess.check_output(f'"{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
 
   model_path = model_folder + "/data/models/" + model_name + ".mod"
-
-  # Make sure the path exists
-  #pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)  # https://stackoverflow.com/a/273227
-
   model_exists = os.path.exists(model_path)
-  
 
   if not overwrite and model_exists:
     return index_error(403, "Model already exists, and header 'overwrite' not set to True")
@@ -394,13 +389,8 @@ def train():
     # TODO perhaps temporarily mv, in case of failure
     os.remove(model_path)
     
-  input_filename = save_data_to_tmp(request, input_type)
 
-  command = sh + " " + input_filename
-
-  if input_type == "xml":
-    command += " " + "model/data/models/" + model_name + ".mod"
-
+  command = f'"{train_and_check}" "{input_filename}" "model/data/models/{model_name}.mod"'
 
   output = subprocess.check_output(command, shell=True)
 
