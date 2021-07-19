@@ -74,7 +74,7 @@ a, nav {
     color:white;
 }
 
-#submit_file_button, #submit_citation_button, #submit_retrain_button {
+#submit_file_button, #submit_citation_button, #submit_retrain_button, #save {
   background-color: #4CAF50;
   border: none;
   color: white;
