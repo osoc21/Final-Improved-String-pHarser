@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <base href="../">
-  <link rel="stylesheet" href="css/stylesheet.css">
+  <base href="../">
+  <link rel="stylesheet" href="../css/stylesheet.css">
   <link href='https://fonts.googleapis.com/css?family=Amatic SC' rel='stylesheet'>
-  <script src="path/to/jquery.js"></script>
-  <script src="path/to/jquery.nice-select.js"></script>
-  <link rel="stylesheet" href="path/to/nice-select.css">
+    <script id="json-picker" src="../js/jsonpath-picker.min.js">
+    </script>
+  <link rel="stylesheet" href="../css/jsonpath-picker.min.css">
 </head>
 
-<body>
+<body onload="render()">
 
 <div class="background"></div>
 
 <div id="container">
-  <img id="crest" src="assets/crest-citation-needed.svg"
+  <img id="crest" src="../assets/crest-citation-needed.svg"
    alt="teamcrest" width="20%" class="center">
 </div>
 <div id="texts">
@@ -36,7 +36,8 @@ function rotate(){
   </nav>
 </div>
 <div class="center">
-
+<pre id="json-renderer"></pre>
+    <input class="path" type="text">
     <!--<textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea>-->
     <pre><code><textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea></code></pre>
     <br>
@@ -81,8 +82,15 @@ function rotate(){
     <script type="text/javascript">
 
         const data = JSON.parse('{{ data | tojson }}');
-
+        function render() {
+            const source = document.querySelector('#json-renderer');
+            const dest = document.querySelectorAll('.path');
+            const options = {"outputCollapsed": true}
+            // Browser
+            JPPicker.render(source, data, dest, options);
+        }
         function handleSelectChange() {
+            render();
             const form = document.getElementById("citation-change-form");
 
             form.innerHTML= ""
@@ -177,7 +185,7 @@ function rotate(){
 </div>
 
 
-<script src="js/index.js"></script>
+<script src="../js/index.js"></script>
 
 </body>
 </html>
