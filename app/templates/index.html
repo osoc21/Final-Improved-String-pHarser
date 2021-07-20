@@ -41,20 +41,20 @@ function rotate(){
       {% endif %}
     {% endif %}
     <form method="POST" enctype="multipart/form-data">
-      <div id="fileButtonDiv" class="file-button">
+      <div id="fileButtonDiv" class="file-button" >
         <!-- type=button is essential, otherwise it'll submit by default -->
         <button type="button" id="fileButton">Choose File</button>
         <span id="fileSpan">No file chosen</span>
         <input type="file" id="file" name="file" class="center" style="color:white;">
       </div>
-      <input type="submit" id="submit_file_button" class="center" onclick="rotate()">
+      <input type="submit" id="submit_file_button" class="center" onclick="rotate()" value="Submit file">
     </form>
     <br>
     <form method="POST" enctype="multipart/form-data">
         <label for="citation" class="center_label">Citation:</label><br>
-        <textarea id="citation" class="center" rows="4" cols="50" name="citationstring" placeholder="Paste your citation string"></textarea>
+        <textarea id="citation" class="center" rows="4" cols="50" name="citationstring" placeholder="Paste your citation string(s)"></textarea>
         <br><br>
-        <input type="submit" id="submit_citation_button" class="center" onclick="rotate()" value="Submit">
+        <input type="submit" id="submit_citation_button" class="center" onclick="rotate()" value="Submit citation strings">
     </form>
 </div>
 

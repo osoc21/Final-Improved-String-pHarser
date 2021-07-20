@@ -102,10 +102,12 @@ function rotate(){
             let original_citation = ""
             fields.forEach(field => {
                 if (field in data.data[citation_index]) {
-                    original_citation += data.data[citation_index][field][0]
+                    original_citation += data.data[citation_index][field][0] + " "
                 }
             })
             textNode = document.createElement("p");
+            textNode.style.fontFamily = "monospace"
+            textNode.style.fontSize = "14px"
             textNode.innerHTML = original_citation;
 
             document.getElementById("citation-change-form").prepend(textNode);
