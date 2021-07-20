@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="../">
+  <link rel="stylesheet" href="../css/stylesheet.css">
+  <link href='https://fonts.googleapis.com/css?family=Amatic SC' rel='stylesheet'>
+    <script id="json-picker" src="../js/jsonpath-picker.min.js">
+    </script>
+  <link rel="stylesheet" href="../css/jsonpath-picker.min.css">
+</head>
+
+<body onload="render()">
+
+<div class="background"></div>
+
+<div id="container">
+  <img id="crest" src="../assets/crest-citation-needed.svg"
+   alt="teamcrest" width="20%" class="center">
+</div>
+<div id="texts">
+<h1 id="name" class="text_center">Final Improved String pHarser</h1>
+</div>
+</div>
+<script>
+function rotate(){
+    document.getElementById("crest").classList.add('rotate');
+}
+</script>
+<!-- Flask requires that you use encoding type multipart/form-data for file uploads! -->
+<div class="navigation">
+  <nav>
+    <a href="/">Home</a> |
+    <a href="/about/">About</a> |
+    <a href="/tos/">Terms of Use</a> |
+    <a href="/contact/">Contact</a> |
+  </nav>
+</div>
+<div class="center">
+    <div class="json-div">
+        <pre id="json-renderer" class="text_left"></pre>
+        <input class="path" type="text" style="display:none">
+    </div>
+    <br>
+    <button type="submit" id="save" title="Save as JSON file" class="center">Save as JSON file</button>
+    <p id="selection-par">Please select a citation to edit</p>
+    <form action="/retrain" method="POST">
+        <p class="text_center"><label for="citations-select" class="text_center">Choose a citation:</label></p>
+        <select class="center" name="citations" id="citations-select" onchange="handleSelectChange()" >
+            <option value="" disabled selected>Select citation</option>
+            {% set longestPartsLengths = [] %}
+            {% for citation in data.data %}
+                {% set longest = namespace(value=0) %}
+                {% for key, value in citation.items() %}
+                    {% if value is not none %}
+                        {% if value[0]|length > longest.value %}
+                            {% set longest.value = value[0]|length %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                {{  longestPartsLengths.append(longest.value) }}
+            {% endfor %}
+
+            {% set count = namespace(value=0) %}
+            {% for citation in data.data %}
+                {% for key, value in citation.items() %}
+                    {% if value is not none %}
+                        {% if value[0]|length == longestPartsLengths[count.value]%}
+                            <option value={{value}} id={{citation}}>{{value[0]}}</option>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                {% set count.value = count.value + 1 %}
+            {%endfor%}
+        </select>
+      <br><br>
+    </form>
+
+    <form action="/" method="POST" enctype="multipart/form-data" id="citation-change-form">
+    </form>
+
+
+    <script type="text/javascript">
+
+        const data = JSON.parse('{{ data | tojson }}');
+        function render() {
+            const source = document.querySelector('#json-renderer');
+            const dest = document.querySelectorAll('.path');
+            const options = {"outputCollapsed": false}
+            // Browser
+            JPPicker.render(source, data, dest, options);
+        }
+        function handleSelectChange() {
+            render();
+            const form = document.getElementById("citation-change-form");
+
+            form.innerHTML= ""
+
+            const fields = ["Authors","Year","Title","Book","Series","Publisher",
+                "City","Volume","Issue","Pagination","DOI"];
+
+            const e = document.getElementById("citations-select");
+
+            // -1 due to selection placeholder at first index
+            const citation_index = e.selectedIndex - 1;
+
+            let textNode = document.createElement("p");
+            textNode.innerHTML = "Correct mistakes";
+            document.getElementById("citation-change-form").prepend(textNode);
+
+            let original_citation = data["original_strings"][citation_index]
+
+            textNode = document.createElement("p");
+            textNode.style.fontFamily = "monospace"
+            textNode.style.fontSize = "14px"
+            textNode.innerHTML = original_citation;
+
+            document.getElementById("citation-change-form").prepend(textNode);
+
+            textNode = document.createElement("p");
+            textNode.innerHTML = "Original citation:";
+            document.getElementById("citation-change-form").prepend(textNode);
+
+
+            fields.forEach(field => {
+
+                const divNode = document.createElement("div");
+                divNode.setAttribute("margin-bottom", "10px")
+
+                const labelNode = document.createElement("label");
+                labelNode.setAttribute("for", field);
+                labelNode.style.color = "white";
+                labelNode.innerText = field;
+                labelNode.style.fontSize = "30px"
+                divNode.style.textAlign = "center"
+
+                const inputNode = document.createElement("input");
+                inputNode.setAttribute("type", "text")
+                inputNode.setAttribute("id", field)
+                inputNode.setAttribute("name", field)
+                inputNode.setAttribute("class", "center")
+                inputNode.setAttribute("size", "100")
+
+                if (field in data.data[citation_index]) {
+                    inputNode.setAttribute("value", data.data[citation_index][field][0])
+                }
+
+                document.getElementById("citation-change-form").appendChild(divNode);
+
+                divNode.appendChild(labelNode);
+                let brNode = document.createElement("br");
+                divNode.appendChild(brNode);
+                divNode.appendChild(inputNode);
+                brNode = document.createElement("br");
+                divNode.appendChild(brNode);
+
+            })
+
+            const submitNode = document.createElement("input")
+            submitNode.setAttribute("type", "submit")
+            submitNode.setAttribute("value", "Retrain model")
+            submitNode.setAttribute("id", "submit_retrain_button")
+            submitNode.setAttribute("class", "center")
+            document.getElementById("citation-change-form").appendChild(submitNode);
+
+        }
+
+        // Download the JSON as a json file
+        // when document is ready
+        // SOURCE: https://stackoverflow.com/questions/2897619/using-html5-javascript-to-generate-and-save-a-file/21677860
+        document.getElementById("save").onclick = function() {
+            const pom = document.createElement('a');
+            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(data)));
+            pom.setAttribute('download', "result.json");
+
+            if (document.createEvent) {
+                const event = document.createEvent('MouseEvents');
+                event.initEvent('click', true, true);
+                pom.dispatchEvent(event);
+            }
+            else {
+                pom.click();
+            }
+        }
+    </script>
+</div>
+
+
+<script src="../js/index.js"></script>
+
+</body>
+</html>

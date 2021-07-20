@@ -6,6 +6,8 @@
 ## Installation
 
 ### Docker
+NOTE: for some reason, Docker on a windows host gave issues for parsing. If you're getting an ioctl/jsondecode error, do the good old Windows > WSL > Docker
+
 After installing Docker, all you have to do is build the dockerfile:
 ```bash
 $ sudo docker build -t fish .
@@ -50,6 +52,11 @@ flask run
 ## Contributing
 ### Python changes
 If you've added any modules/packages, I recommend using [pipreqs](https://pypi.org/project/pipreqs/) to automatically update the requirements.txt. Simply run `pipreqs --force` before committing and you're done!
+
+Docker with mounting:
+```bash
+docker run -p 5000:5000 --mount type=bind,src="$(pwd)/app",target=/app --mount type=bind,src="$(pwd)/model",target=/app/model --mount type=bind,src="$(pwd)/temp",target=/app/temp fish 
+```
 
 
 ## Credits

@@ -44,11 +44,34 @@ mismatchedRatioBase = []
 total_examples = sum(1 for row in csv_reader)
 nb = 1
 test_csv_file.seek(0)
+
+mistakesMapFullModel = {}
+for citationKey in columns:
+    mistakesMapFullModel[citationKey] = 0
+
+errorsMapFullModel = {}
+for citationKey in columns:
+    errorsMapFullModel[citationKey] = 0
+
+mistakesMapYearModel = {}
+for citationKey in columns:
+    mistakesMapYearModel[citationKey] = 0
+
+errorsMapYearModel = {}
+for citationKey in columns:
+    errorsMapYearModel[citationKey] = 0
+
+partsCount = {}
+for citationKey in columns:
+    partsCount[citationKey] = 0
+
 for line in csv_reader:
-    try:
-        line_nb += 1
+
+    line_nb += 1
+
+    if line_nb < len(outputJsonBase):
         year = 0
-        if outputJsonBase[line_nb]["Year"] is not None:
+        if "Year" in outputJsonBase[line_nb] and outputJsonBase[line_nb]["Year"] is not None:
             year = outputJsonBase[line_nb]["Year"][0]
             year = re.sub(r'[^A-Za-z0-9 ]+', '', year)
         totalParts = 0
@@ -61,7 +84,7 @@ for line in csv_reader:
         for file_name in file_names:
             year_range = file_name.split(".")[0].split("-")
 
-            if year_range[0] <= year <= year_range[1]:
+            if int(year_range[0]) <= int(year) <= int(year_range[1]):
                 output = subprocess.check_output('anystyle -P ' + YEARS_MODELS_PATH + file_name +
                                                  ' -f json parse ' +
                                                  test_xml_file_name,
@@ -69,41 +92,38 @@ for line in csv_reader:
                 outputJsonYear = json.loads(output)
 
                 for citationKey in columns:
-                    try:
-                        if citationKey != "String" and line[citationKey] != "":
-                            totalParts += 1
-                    except KeyError:
-                        pass
-                    try:
+                    if citationKey in line and citationKey != "String" and line[citationKey] != "":
+                        totalParts += 1
+                        partsCount[citationKey] += 1
+                    if citationKey in line:
                         expected = line[citationKey]
 
                         expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
 
-                        if expected != "":
-                            try:
-                                predicted = outputJsonYear[line_nb-1][citationKey][0]
-                                predicted = re.sub(r'[^A-Za-z0-9 ]+', '', predicted)
-                                if expected != predicted:
-                                    # print("Expected" + citationKey + " : " + str(expected))
-                                    # print("Predicted" + citationKey + " : " + str(predicted))
-                                    mismatchesYear += 1
-                            except KeyError:
-                                errorsYear += 1
-                    except KeyError:
-                        pass
-                    try:
+                        if expected != "" and citationKey in outputJsonYear[line_nb - 1]:
+                            predicted = outputJsonYear[line_nb-1][citationKey][0]
+                            predicted = re.sub(r'[^A-Za-z0-9 ]+', '', predicted)
+                            if expected != predicted:
+                                # print("Expected" + citationKey + " : " + str(expected))
+                                # print("Predicted" + citationKey + " : " + str(predicted))
+                                mismatchesYear += 1
+                                mistakesMapYearModel[citationKey] += 1
+                        elif expected != "":
+                            errorsYear += 1
+                            errorsMapYearModel[citationKey] += 1
+
+                    if citationKey in line:
                         expected = line[citationKey]
                         expected = re.sub(r'[^A-Za-z0-9 ]+', '', expected)
-                        if expected != "":
-                            try:
-                                predictedBase = outputJsonBase[line_nb][citationKey][0]
-                                predictedBase = re.sub(r'[^A-Za-z0-9 ]+', '', predictedBase)
-                                if expected != predictedBase:
-                                    mismatchesBase += 1
-                            except KeyError:
-                                errorsBase += 1
-                    except KeyError:
-                        pass
+                        if expected != "" and citationKey in outputJsonBase[line_nb]:
+                            predictedBase = outputJsonBase[line_nb][citationKey][0]
+                            predictedBase = re.sub(r'[^A-Za-z0-9 ]+', '', predictedBase)
+                            if expected != predictedBase:
+                                mismatchesBase += 1
+                                mistakesMapFullModel[citationKey] += 1
+                        elif expected != "":
+                            errorsBase += 1
+                            errorsMapFullModel[citationKey] += 1
                 outputJsonYear = json.loads(output)
 
         print("========= Year model ==========")
@@ -133,9 +153,27 @@ for line in csv_reader:
             print(f"Mismatched ratio base model {statistics.mean(mismatchedRatioBase)}")
             print(f"Missing ratio base model {statistics.mean(missingRatioBase)}")
 
-    except KeyError:
-        print("No year found in full model.")
+        print("========= Detailed statistics ==========")
+        ratioMistakesYearMap = {}
+        for key, value in mistakesMapYearModel.items():
+            if partsCount[key] > 0:
+                ratioMistakesYearMap[key] = mistakesMapYearModel[key] / partsCount[key]
+        ratioErrorsYearMap = {}
+        for key, value in errorsMapYearModel.items():
+            if partsCount[key] > 0:
+                ratioErrorsYearMap[key] = errorsMapYearModel[key] / partsCount[key]
+        ratioMistakesFullMap = {}
+        for key, value in mistakesMapFullModel.items():
+            if partsCount[key] > 0:
+                ratioMistakesFullMap[key] = mistakesMapFullModel[key] / partsCount[key]
+        ratioErrorsFullMap = {}
+        for key, value in errorsMapFullModel.items():
+            if partsCount[key] > 0:
+                ratioErrorsFullMap[key] = errorsMapFullModel[key] / partsCount[key]
+        print("========= Year model ==========")
+        print(f"Amount of mistakes {ratioMistakesYearMap}")
+        print(f"Errors {ratioErrorsYearMap}")
 
-
-
-
+        print("========= Full model ==========")
+        print(f"Amount of mistakes {ratioMistakesFullMap}")
+        print(f"Errors {ratioErrorsFullMap}")

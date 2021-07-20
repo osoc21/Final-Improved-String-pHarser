@@ -24,7 +24,7 @@ SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL,
     config={
-        'app_name': "Seans-Python-Flask-REST-Boilerplate"
+        'app_name': "Final-Improved-String-pHarser"
     }
 )
 api.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
@@ -69,6 +69,53 @@ def get_tos_page():
 @api.route('/contact/', methods=['GET'])
 def get_contact_page():
     return render_template("contact.html")
+
+
+def index_error(err_code, message):
+  data = {"response": message, "type": "error"}
+  return render_template('index.html', data=data), err_code, {'Content-Type': 'text/html'}
+
+def index_success(success_code, success_msg):
+  data = {"response": success_msg, "type": "success"}
+  return render_template('index.html', data=data), success_code, {'Content-Type': 'text/html'}
+
+def remove_in_background(filenames):
+  if type(filenames) == str:
+    filenames = [filenames] 
+  threading.Thread(target=remove_files, args=(filenames,)).start()  # , is important
+
+"""
+save_data_to_file uses its parameters to save the POST data to a random filename,
+returning the filename afterwards
+
+request: the request object
+ext: the extension to save the file as
+form_input_name: the name of the form input to get data from
+"""
+# Pass the request object,  the extension and 
+def save_data_to_tmp(request, ext, form_input_name=None):
+  print("request")
+
+  print(request)
+  # To ensure no duplicate filenames, use headers to create a filename
+  # This will give issues if two people upload two files with the exact same size on the exact same second
+  # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
+  temp_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + ext
+ 
+  # If a string was directly given (no direct file upload), save it to a file
+  if len(request.files) <= 0:
+    # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
+    # Either get from form or from request data
+    data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
+  
+    file_from_string = open(temp_filename, "w", encoding="utf-8")
+    file_from_string.write(data)
+    file_from_string.close()
+  else:
+    # If a file is getting uploaded, save it as well
+    request.files['file'].save(temp_filename)
+  return temp_filename
+
 """
 Parse citation strings from plain text, with one citation per line. This is the most ideal method
 
@@ -111,19 +158,26 @@ For the form:
     ...
 
 """
+CITATION_STRING_CONST = "citationstring"
+@api.route('/retrain', methods=['POST'])
+def retrain():
+  if request.form and CITATION_STRING_CONST not in request.form:
+    # TODO: retrain model here
+    return index_success(200, "Successfully updated model. Thank you for your contribution")
+
 @api.route('/parse', methods=['POST'])
 def parse():
   # Step 1: figure out what kind of input is given
   content_type = request.headers.get("content-type")
-  file_upload = False
-  
-  if "text/plain" in content_type:
+
+  if "multipart/form-data" in content_type:
+    input_type = "form"
+  elif "text/plain" in content_type:
     input_type = "txt"
-  if "csv" in content_type:
+  elif "csv" in content_type:
     input_type = "csv"
   # If a form is used to send a file
-  elif "multipart/form-data" in content_type:
-    file_upload = True
+  elif len(request.files) >= 1:
     old_filename = request.files['file'].filename.lower()
     # Check for allowed formats
     if old_filename.endswith("csv"):
@@ -132,10 +186,7 @@ def parse():
       input_type = "txt"
     else:
       # If a non-supported format gets uploaded, return 422
-      return api.response_class(
-          response="The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.",
-          status=422  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422
-      )
+      return index_error(422, "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.")
   # If input type couldn't be determined, assume plaintext
   else:
     input_type = "txt"
@@ -162,21 +213,8 @@ def parse():
   From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input
   """
   
-  # To ensure no duplicate filenames, use headers to create a filename
-  # This will give issues if two people upload two files with the exact same size on the exact same second
-  # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
-  input_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + input_type
+  input_filename = save_data_to_tmp(request, input_type, CITATION_STRING_CONST)
   input_filenames = [input_filename]  # List of filenames to clean later
- 
-  # If a string was directly given, save it to a file
-  if not file_upload:
-    file_from_string = open(input_filename, "w", encoding="utf-8")
-    file_from_string.write(request.get_data().decode("utf-8"))
-    file_from_string.close()
-  else:
-    # If a file is getting uploaded, save it as well
-    request.files['file'].save(input_filename)
-  
 
   """ 
   Example of a line as provided in a .csv file by VLIZ:
@@ -214,13 +252,29 @@ def parse():
   model_name = request.headers.get("model-name")
   data, used_model = process_file(input_filename, model_name)
 
-  threading.Thread(target=remove_files, args=(input_filenames,)).start()  # , is important
+  original_strings = []
+  with open(input_filename, "r") as f:
+    lines = f.readlines()
+    for line in lines:
+      original_strings.append(line.strip("\n"))
+
+  remove_in_background(input_filenames)
+
+  if request.form and CITATION_STRING_CONST not in request.form:
+    # TODO: retrain model here
+    return index_success(200, "Successfully updated model. Thank you for your contribution")
+
+  if len(data) <= 0:
+      return index_error(422, "No data found in input")
 
   print("Returning data...")
-  return {
+  return_data = {
     "model": used_model,
-    "data": json.loads(data)
+    "data": data,
+    "original_strings": original_strings
   }
+  return render_template("response.html", data=return_data)
+  
 
 def remove_files(files):
   for file in files:
@@ -286,10 +340,16 @@ def process_file(filepath, model_name=False):
   
   # rglob may return WindowsPath, so convert to str
   model = str(model)
+  data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True)
+  data = json.loads(data)
+
+  # Remove type field
+  for citation in data:
+    del citation["type"]
 
   return [
     # Put quotes around the parameters in case of space
-    subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True),
+    data,
     os.path.basename(model)
   ]
 
@@ -314,6 +374,71 @@ def select_model(model_name):
   else:
     raise FileNotFoundError
 
+
+#train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
+@api.route('/train', methods=['POST'])
+def train():
+  content_type = request.headers.get("content-type")
+  model_name = request.headers.get("model-name")
+  overwrite = header_boolean(request.headers.get("overwrite"), default=False)
+
+  input_filenames = []
+
+  # Lowercase and secure model name
+  model_name = model_name.lower().rstrip(".mod")
+
+  # XML -> train_and_check
+  if "xml" in content_type:
+    input_type = "xml"
+    input_filename = save_data_to_tmp(request, input_type)
+
+  # CSV -> train_year_models
+  if "csv" in content_type:
+    input_type = "csv"
+    input_csv = save_data_to_tmp(request, input_type)
+    input_filename = input_csv.replace("csv", "xml")
+    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
+
+    input_filenames.append(input_csv)
+  input_filenames.append(input_filename)
+  
+
+  model_path = model_folder + "/data/models/" + model_name + ".mod"
+  model_exists = os.path.exists(model_path)
+
+  if model_exists:
+    shutil.copy2(model_path, model_path + ".bak")
+    input_filenames.append(model_path + ".bak")
+  
+  # Try to update the model
+  try:
+    if not overwrite and model_exists:
+      return index_error(403, "Model already exists, and header 'overwrite' not set to True")
+    elif overwrite and model_exists:
+      pass
+      
+    if overwrite and model_exists:
+      # TODO APPEND!!
+      os.remove(model_path)
+      
+    command = f'anystyle train "{input_filename}" "model/data/models/{model_name}.mod"'
+    output = subprocess.check_output(command, shell=True)
+
+    remove_in_background(input_filenames)
+
+    return output
+  # On any crash, recover backup
+  except Exception as e:
+    print("Error during training")
+    # Remove the new model if it exists
+    if os.path.exists(model_path):
+      os.remove(model_path)
+    shutil.copy2(model_path + ".bak", model_path)
+
+    remove_in_background(input_filenames)
+    return index_error(500, e)
+
+  
 
 
 # Serve CSS until it's handled by something else
