@@ -258,8 +258,6 @@ def parse():
     for line in lines:
       original_strings.append(line.strip("\n"))
 
-  data = json.loads(data)
-
   remove_in_background(input_filenames)
 
   if request.form and CITATION_STRING_CONST not in request.form:
@@ -275,7 +273,6 @@ def parse():
     "data": data,
     "original_strings": original_strings
   }
-  print(data)
   return render_template("response.html", data=return_data)
   
 
@@ -343,10 +340,16 @@ def process_file(filepath, model_name=False):
   
   # rglob may return WindowsPath, so convert to str
   model = str(model)
-  print(subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True))
+  data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True)
+  data = json.loads(data)
+
+  # Remove type field
+  for citation in data:
+    del citation["type"]
+
   return [
     # Put quotes around the parameters in case of space
-    subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True),
+    data,
     os.path.basename(model)
   ]
 
