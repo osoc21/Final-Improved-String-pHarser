@@ -94,6 +94,9 @@ form_input_name: the name of the form input to get data from
 """
 # Pass the request object,  the extension and 
 def save_data_to_tmp(request, ext, form_input_name=None):
+  print("request")
+
+  print(request)
   # To ensure no duplicate filenames, use headers to create a filename
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
@@ -249,6 +252,12 @@ def parse():
   model_name = request.headers.get("model-name")
   data, used_model = process_file(input_filename, model_name)
 
+  original_strings = []
+  with open(input_filename, "r") as f:
+    lines = f.readlines()
+    for line in lines:
+      original_strings.append(line.strip("\n"))
+
   data = json.loads(data)
 
   remove_in_background(input_filenames)
@@ -263,7 +272,8 @@ def parse():
   print("Returning data...")
   return_data = {
     "model": used_model,
-    "data": data
+    "data": data,
+    "original_strings": original_strings
   }
 
   # If sent using a regular request, just return the JSON file
@@ -338,7 +348,7 @@ def process_file(filepath, model_name=False):
   
   # rglob may return WindowsPath, so convert to str
   model = str(model)
-
+  print(subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True))
   return [
     # Put quotes around the parameters in case of space
     subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True),
