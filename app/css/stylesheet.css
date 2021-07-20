@@ -39,6 +39,9 @@ body {
     text-align: center;
 }
 
+.text_left {
+    text-align: left;
+}
 .error_message {
     color: red;
     background: rgba(0,0,0,.5);
@@ -174,4 +177,14 @@ input[type=submit]:hover {
 
 #fileButtonDiv {
     width: 200px;
+}
+
+.json-div {
+    background-color: white;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: scroll;
+    width: 1000px;
+    height: 200px;
 }

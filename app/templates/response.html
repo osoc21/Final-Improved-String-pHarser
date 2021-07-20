@@ -36,10 +36,10 @@ function rotate(){
   </nav>
 </div>
 <div class="center">
-<pre id="json-renderer"></pre>
-    <input class="path" type="text">
-    <!--<textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea>-->
-    <pre><code><textarea cols="50" rows="10" id="source" class="center">{{data}}</textarea></code></pre>
+    <div class="json-div">
+        <pre id="json-renderer" class="text_left"></pre>
+        <input class="path" type="text" style="display:none">
+    </div>
     <br>
     <button type="submit" id="save" title="Save as JSON file" class="center">Save as JSON file</button>
     <p id="selection-par">Please select a citation to edit</p>
@@ -85,7 +85,7 @@ function rotate(){
         function render() {
             const source = document.querySelector('#json-renderer');
             const dest = document.querySelectorAll('.path');
-            const options = {"outputCollapsed": true}
+            const options = {"outputCollapsed": false}
             // Browser
             JPPicker.render(source, data, dest, options);
         }
