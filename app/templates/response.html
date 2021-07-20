@@ -42,7 +42,7 @@ function rotate(){
     <br>
     <button type="submit" id="save" title="Save as JSON file" class="center">Save as JSON file</button>
     <p id="selection-par">Please select a citation to edit</p>
-    <form>
+    <form action="/retrain" method="POST">
         <p class="text_center"><label for="citations-select" class="text_center">Choose a citation:</label></p>
         <select class="center" name="citations" id="citations-select" onchange="handleSelectChange()" >
             <option value="" disabled selected>Select citation</option>
