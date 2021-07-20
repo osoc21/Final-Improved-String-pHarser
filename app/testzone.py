@@ -1,0 +1,1 @@
+pip install git+git://github.com/wellcometrust/deep_reference_parser.git#egg=deep_reference_parser
