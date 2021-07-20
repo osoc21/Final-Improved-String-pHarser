@@ -185,6 +185,6 @@ input[type=submit]:hover {
     margin-left: auto;
     margin-right: auto;
     overflow: scroll;
-    width: 1000px;
-    height: 200px;
+    width: 50vw;
+    height: 80vh;
 }
