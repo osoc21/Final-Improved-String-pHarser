@@ -10,7 +10,7 @@ NOTE: for some reason, Docker on a windows host gave issues for parsing. If you'
 
 After installing Docker, all you have to do is build the dockerfile:
 ```bash
-$ sudo docker build -t fish .
+$ docker build -t fish .
 ```
 
 ### Manual
@@ -27,7 +27,7 @@ $ sudo docker build -t fish .
 ### Docker
 Run the following command:
 ```bash
-$ sudo docker run -p 5000:5000 fish
+$ docker run -p 5000:5000 fish
 ```
 
 ### Manual (Windows)
