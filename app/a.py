@@ -275,13 +275,8 @@ def parse():
     "data": data,
     "original_strings": original_strings
   }
-
-  # If sent using a regular request, just return the JSON file
-  if not request.form:
-    return return_data
-  # If sent from a form/thus a web browser, return rendered HTML
-  else:
-    return render_template("response.html", data=return_data)
+  print(data)
+  return render_template("response.html", data=return_data)
   
 
 def remove_files(files):
