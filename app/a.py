@@ -261,7 +261,7 @@ def parse():
   data, used_model = process_file(input_filename, model_name)
 
   original_strings = []
-  with open(input_filename, "r") as f:
+  with open(input_filename, "r", encoding="utf-8") as f:
     lines = f.readlines()
     for line in lines:
       original_strings.append(line.strip("\n"))
