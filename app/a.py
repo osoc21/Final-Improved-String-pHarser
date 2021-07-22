@@ -48,8 +48,10 @@ METHOD: POST
 """
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
+    models = list(model_folder_path.rglob("*.mod"))
+
     if request.method == "GET":
-        return render_template("index.html")
+        return render_template("index.html", models=get_all_models())
 
     # If a post gets done to /, assume the user wants to parse, so call /parse
     elif request.method == "POST":
@@ -70,14 +72,17 @@ def get_tos_page():
 def get_contact_page():
     return render_template("contact.html")
 
+def get_all_models():
+  return list(model_folder_path.rglob("*.mod"))
+
 
 def index_error(err_code, message):
   data = {"response": message, "type": "error"}
-  return render_template('index.html', data=data), err_code, {'Content-Type': 'text/html'}
+  return render_template('index.html', data=data, models=get_all_models()), err_code, {'Content-Type': 'text/html'}
 
 def index_success(success_code, success_msg):
   data = {"response": success_msg, "type": "success"}
-  return render_template('index.html', data=data), success_code, {'Content-Type': 'text/html'}
+  return render_template('index.html', data=data, models=get_all_models()), success_code, {'Content-Type': 'text/html'}
 
 def remove_in_background(filenames):
   if type(filenames) == str:
@@ -252,7 +257,7 @@ def parse():
 
 
   # Step 3: run anystyle and return the result
-  model_name = request.headers.get("model-name")
+  model_name = request.form["model-name"] or request.headers.get("model-name")
   data, used_model = process_file(input_filename, model_name)
 
   original_strings = []
@@ -263,9 +268,11 @@ def parse():
 
   remove_in_background(input_filenames)
 
+  """
   if request.form and CITATION_STRING_CONST not in request.form:
     # TODO: retrain model here
     return index_success(200, "Successfully updated model. Thank you for your contribution")
+  """
 
   if len(data) <= 0:
       return index_error(422, "No data found in input")
