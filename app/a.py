@@ -293,7 +293,7 @@ def parse():
     for line in lines:
       original_strings.append(line.strip("\n"))
 
-  #remove_in_background(input_filenames)
+  remove_in_background(input_filenames)
 
   """
   if request.form and CITATION_STRING_CONST not in request.form:
