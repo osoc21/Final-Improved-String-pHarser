@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
         # read all the pdf's inside the directory created and put the parsed string there
         client = GrobidClient(config_path="./config.json")
+        # calls their service
         client.process("processReferences", filedir, output= filedir,
                         consolidate_citations=True, teiCoordinates=True, force=True)
 
