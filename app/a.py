@@ -13,6 +13,7 @@ import csv
 import json
 import pathlib
 import threading
+import xml.etree.cElementTree as ET
 
 from flask.helpers import send_from_directory
 
@@ -118,6 +119,7 @@ def save_data(filename, data):
   file_from_string = open(filename, "w", encoding="utf-8")
   file_from_string.write(data)
   file_from_string.close()
+  return filename
 
 """
 Parse citation strings from plain text, with one citation per line. This is the most ideal method
@@ -381,7 +383,7 @@ def select_model(model_name):
 #train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
 @api.route('/train', methods=['POST'])
 def train():
-  content_type = request.headers.get("content-type")
+  #content_type = request.headers.get("content-type")
   model_name = request.headers.get("model-name")
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
 
@@ -390,12 +392,7 @@ def train():
   # Lowercase and secure model name
   model_name = model_name.lower().rstrip(".mod")
 
-  # XML -> train_and_check
-  if "xml" in content_type:
-    input_type = "xml"
-    input_filename = save_data_to_tmp(request, input_type)
 
-  # CSV -> train_year_models
   if "csv" in content_type:
     input_type = "csv"
     input_csv = save_data_to_tmp(request, input_type)
@@ -403,8 +400,6 @@ def train():
     print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
 
     input_filenames.append(input_csv)
-  input_filenames.append(input_filename)
-  
 
   model_path = model_folder + "/data/models/" + model_name + ".mod"
   model_exists = os.path.exists(model_path)
