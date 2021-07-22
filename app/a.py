@@ -107,14 +107,17 @@ def save_data_to_tmp(request, ext, form_input_name=None):
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
     data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
-  
-    file_from_string = open(temp_filename, "w", encoding="utf-8")
-    file_from_string.write(data)
-    file_from_string.close()
+    save_data(temp_filename, data)
+    
   else:
     # If a file is getting uploaded, save it as well
     request.files['file'].save(temp_filename)
   return temp_filename
+
+def save_data(filename, data):
+  file_from_string = open(filename, "w", encoding="utf-8")
+  file_from_string.write(data)
+  file_from_string.close()
 
 """
 Parse citation strings from plain text, with one citation per line. This is the most ideal method
