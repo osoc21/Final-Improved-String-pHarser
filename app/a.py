@@ -47,8 +47,10 @@ METHOD: POST
 """
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
+    models = list(model_folder_path.rglob("*.mod"))
+
     if request.method == "GET":
-        return render_template("index.html")
+        return render_template("index.html", models=get_all_models())
 
     # If a post gets done to /, assume the user wants to parse, so call /parse
     elif request.method == "POST":
@@ -69,14 +71,17 @@ def get_tos_page():
 def get_contact_page():
     return render_template("contact.html")
 
+def get_all_models():
+  return list(model_folder_path.rglob("*.mod"))
+
 
 def index_error(err_code, message):
   data = {"response": message, "type": "error"}
-  return render_template('index.html', data=data), err_code, {'Content-Type': 'text/html'}
+  return render_template('index.html', data=data, models=get_all_models()), err_code, {'Content-Type': 'text/html'}
 
 def index_success(success_code, success_msg):
   data = {"response": success_msg, "type": "success"}
-  return render_template('index.html', data=data), success_code, {'Content-Type': 'text/html'}
+  return render_template('index.html', data=data, models=get_all_models()), success_code, {'Content-Type': 'text/html'}
 
 def remove_in_background(filenames):
   if type(filenames) == str:
@@ -106,14 +111,17 @@ def save_data_to_tmp(request, ext, form_input_name=None):
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
     data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
-  
-    file_from_string = open(temp_filename, "w", encoding="utf-8")
-    file_from_string.write(data)
-    file_from_string.close()
+    save_data(temp_filename, data)
+    
   else:
     # If a file is getting uploaded, save it as well
     request.files['file'].save(temp_filename)
   return temp_filename
+
+def save_data(filename, data):
+  file_from_string = open(filename, "w", encoding="utf-8")
+  file_from_string.write(data)
+  file_from_string.close()
 
 """
 Parse citation strings from plain text, with one citation per line. This is the most ideal method
@@ -276,20 +284,22 @@ def parse():
 
 
   # Step 3: run anystyle and return the result
-  model_name = request.headers.get("model-name")
+  model_name = request.form["model-name"] or request.headers.get("model-name")
   data, used_model = process_file(input_filename, model_name)
 
   original_strings = []
-  with open(input_filename, "r") as f:
+  with open(input_filename, "r", encoding="utf-8") as f:
     lines = f.readlines()
     for line in lines:
       original_strings.append(line.strip("\n"))
 
   #remove_in_background(input_filenames)
 
+  """
   if request.form and CITATION_STRING_CONST not in request.form:
     # TODO: retrain model here
     return index_success(200, "Successfully updated model. Thank you for your contribution")
+  """
 
   if len(data) <= 0:
       return index_error(422, "No data found in input")
