@@ -167,11 +167,44 @@ For the form:
 
 """
 CITATION_STRING_CONST = "citationstring"
+# Currently only support from form
 @api.route('/retrain', methods=['POST'])
 def retrain():
-  if request.form and CITATION_STRING_CONST not in request.form:
+  model_name = request.form["model"]
+
+  print(model_name)
+
+  model_path = select_model(model_name)
+  model_data_path = model_path + ".xml"
+  model_data = ET.parse(model_data_path)
+
+  dataset = model_data.getroot()
+  sequence = ET.SubElement(dataset, "sequence")
+
+  keys = request.form.keys()
+  for key in keys:
+    print(key)
+    # Don't add model-name to XML
+    if key == "model-name":
+      continue
+
+    value = request.form[key]
+    print("  " + value)
+
+    
+    ET.SubElement(sequence, key).text = value
+
+    
+  
+  model_data.write(model_data_path)
+
+  print("training")
+  train_model(model_path, model_data_path, overwrite=True)
+  print("trained")
+
+  #if request.form:
     # TODO: retrain model here
-    return index_success(200, "Successfully updated model. Thank you for your contribution")
+  return index_success(200, "Successfully updated model. Thank you for your contribution")
 
 @api.route('/parse', methods=['POST'])
 def parse():
@@ -283,7 +316,7 @@ def parse():
     "data": data,
     "original_strings": original_strings
   }
-  return render_template("response.html", data=return_data)
+  return render_template("response.html", data=return_data, model=used_model)
   
 
 def remove_files(files):
@@ -381,38 +414,17 @@ Example usage: select_model("examples-300.mod")
 Example return: model/examples-300.mod
 """
 def select_model(model_name):
-  model_path = model_folder + model_name + ".mod"
+  print(model_name)
+  model_name = model_name.rstrip(".mod")
+  model_path = str(next(model_folder_path.rglob(model_name + ".mod")))
 
   if os.path.isfile(model_path):
     return model_path
   else:
     raise FileNotFoundError
 
-
-#train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
-@api.route('/train', methods=['POST'])
-def train():
-  content_type = request.headers.get("content-type")
-  model_name = request.headers.get("model-name")
-  overwrite = header_boolean(request.headers.get("overwrite"), default=False)
-
-  input_filenames = []
-
-  # Lowercase and secure model name
-  model_name = model_name.lower().rstrip(".mod")
-
-  model_path = model_folder + "/data/models/" + model_name + ".mod"
-  data_path = model_path + ".xml"
+def train_model(model_path, data_path, overwrite, input_filenames=[]):
   model_exists = os.path.exists(model_path)
-
-  if "csv" in content_type:
-    input_type = "csv"
-    input_csv = save_data_to_tmp(request, input_type)
-    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
-
-    input_filenames.append(input_csv)
-  
-  save_data(request, data_path)
 
   if model_exists:
     shutil.copy2(model_path, model_path + ".bak")
@@ -430,7 +442,7 @@ def train():
       os.remove(model_path)
   
 
-    command = f'anystyle train "{data_path}" "model/data/models/{model_name}.mod"'
+    command = f'anystyle train "{data_path}" "{model_path}"'
     print(command)
     output = subprocess.check_output(command, shell=True)
 
@@ -451,6 +463,32 @@ def train():
     remove_in_background(input_filenames)
     return index_error(500, e)
 
+
+#train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
+@api.route('/train', methods=['POST'])
+def train():
+  content_type = request.headers.get("content-type")
+  model_name = request.headers.get("model-name")
+  overwrite = header_boolean(request.headers.get("overwrite"), default=False)
+
+  input_filenames = []
+
+  # Lowercase and secure model name
+  model_name = model_name.lower().rstrip(".mod")
+
+  model_path = model_folder + "/data/models/" + model_name + ".mod"
+  data_path = model_path + ".xml"
+
+  if "csv" in content_type:
+    input_type = "csv"
+    input_csv = save_data_to_tmp(request, input_type)
+    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
+
+    input_filenames.append(input_csv)
+  
+  save_data(request, data_path)
+
+  train_model(model_path, data_path, overwrite, input_filenames)
   
 
 

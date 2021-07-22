@@ -75,7 +75,7 @@ function rotate(){
       <br><br>
     </form>
 
-    <form action="/" method="POST" enctype="multipart/form-data" id="citation-change-form">
+    <form action="/retrain" method="POST" enctype="multipart/form-data" id="citation-change-form">
     </form>
 
 
@@ -94,6 +94,7 @@ function rotate(){
             const form = document.getElementById("citation-change-form");
 
             form.innerHTML= ""
+            form.innerHTML += '<input type="text" name="model" value="' + data["model"] +  '">';
 
             const fields = ["Authors","Year","Title","Book","Series","Publisher",
                 "City","Volume","Issue","Pagination","DOI"];
