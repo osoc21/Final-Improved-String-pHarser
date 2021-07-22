@@ -282,9 +282,13 @@ def parse():
   
 
 def remove_files(files):
-  for file in files:
-    os.remove(file)
-  print("Removed")
+  try:
+    for file in files:
+      os.remove(file)
+    print("Removed")
+  except Exception as e:
+    print("Error while removing")
+    print(e)
 
 
 def header_boolean(header_value, default):
@@ -418,8 +422,10 @@ def train():
     if overwrite and model_exists:
       # TODO APPEND!!
       os.remove(model_path)
-      
+  
+
     command = f'anystyle train "{data_path}" "model/data/models/{model_name}.mod"'
+    print(command)
     output = subprocess.check_output(command, shell=True)
 
     remove_in_background(input_filenames)
@@ -431,7 +437,10 @@ def train():
     # Remove the new model if it exists
     if os.path.exists(model_path):
       os.remove(model_path)
-    shutil.copy2(model_path + ".bak", model_path)
+    
+    # Only try to recover if it exists
+    if model_exists:
+      shutil.copy2(model_path + ".bak", model_path)
 
     remove_in_background(input_filenames)
     return index_error(500, e)
