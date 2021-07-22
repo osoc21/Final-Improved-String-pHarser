@@ -383,7 +383,7 @@ def select_model(model_name):
 #train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
 @api.route('/train', methods=['POST'])
 def train():
-  #content_type = request.headers.get("content-type")
+  content_type = request.headers.get("content-type")
   model_name = request.headers.get("model-name")
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
 
@@ -392,17 +392,17 @@ def train():
   # Lowercase and secure model name
   model_name = model_name.lower().rstrip(".mod")
 
+  model_path = model_folder + "/data/models/" + model_name + ".mod"
+  data_path = model_path + ".xml"
+  model_exists = os.path.exists(model_path)
 
   if "csv" in content_type:
     input_type = "csv"
     input_csv = save_data_to_tmp(request, input_type)
-    input_filename = input_csv.replace("csv", "xml")
-    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
+    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
 
     input_filenames.append(input_csv)
 
-  model_path = model_folder + "/data/models/" + model_name + ".mod"
-  model_exists = os.path.exists(model_path)
 
   if model_exists:
     shutil.copy2(model_path, model_path + ".bak")
@@ -419,7 +419,7 @@ def train():
       # TODO APPEND!!
       os.remove(model_path)
       
-    command = f'anystyle train "{input_filename}" "model/data/models/{model_name}.mod"'
+    command = f'anystyle train "{data_path}" "model/data/models/{model_name}.mod"'
     output = subprocess.check_output(command, shell=True)
 
     remove_in_background(input_filenames)
