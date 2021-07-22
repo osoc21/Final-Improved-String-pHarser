@@ -7,7 +7,6 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import subprocess
 import os
 import shutil
-import glob
 import time
 import csv
 import json
@@ -31,7 +30,7 @@ api.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 temporary_folder = "temp/"
 model_folder = "model/"
-
+GROBID_PATH = "grobid_client_python/"
 
 """
 User Interface to manually upload a file, or (later on) manually correct output.
@@ -165,6 +164,29 @@ def retrain():
     # TODO: retrain model here
     return index_success(200, "Successfully updated model. Thank you for your contribution")
 
+def process_pdf_file(file_path):
+  path = file_path.split("/")[:len(file_path.split("/")) - 1]
+  print(path)
+  path = ''.join(path)
+  file_name = file_path.split("/")[len(file_path.split("/")) - 1]
+  #subprocess.check_output('python3 ./hello.py', shell=True)
+  print('python3 grobid_client_python/example.py' + ' ' + path + ' ' + file_name)
+  data = subprocess.check_output('python3 grobid_client_python/example.py' + ' ' + path + ' ' +
+                                 file_name, shell=True)
+  print(data)
+
+def parse_pdf():
+  #model_name = request.headers.get("model-name")
+  input_filename = GROBID_PATH + temporary_folder + request.files['file'].filename
+  data, used_model = process_pdf_file(input_filename)#, model_name)
+  print(input_filename)
+  return_data = {
+    "model": used_model,
+    "data": data,
+    "original_strings": ""
+  }
+  return render_template("response.html", data=return_data)
+
 @api.route('/parse', methods=['POST'])
 def parse():
   # Step 1: figure out what kind of input is given
@@ -176,22 +198,25 @@ def parse():
     input_type = "txt"
   elif "csv" in content_type:
     input_type = "csv"
+  #elif "pdf" in content_type:
+ #   input_type = "pdf"
+
   # If a form is used to send a file
-  elif len(request.files) >= 1:
+  if len(request.files) >= 1:
     old_filename = request.files['file'].filename.lower()
     # Check for allowed formats
     if old_filename.endswith("csv"):
       input_type = "csv"
     elif old_filename.endswith("txt") or old_filename.endswith("ref"):
       input_type = "txt"
+ #   elif old_filename.endswith("pdf"):
+  #    input_type = "pdf"
     else:
       # If a non-supported format gets uploaded, return 422
       return index_error(422, "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.")
   # If input type couldn't be determined, assume plaintext
   else:
     input_type = "txt"
-  
-
 
   # Step 2: put the input in a form that anystyle-cli can work with
   """
@@ -220,6 +245,8 @@ def parse():
   Example of a line as provided in a .csv file by VLIZ:
   Krohling, W., & Zalmon, I. R. 2008. Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology 51: 213-221.
   """
+#  if input_type == "pdf":
+ #   return parse_pdf()
 
   if input_type == "csv":
     input_filename_csv = input_filename
@@ -258,7 +285,7 @@ def parse():
     for line in lines:
       original_strings.append(line.strip("\n"))
 
-  remove_in_background(input_filenames)
+  #remove_in_background(input_filenames)
 
   if request.form and CITATION_STRING_CONST not in request.form:
     # TODO: retrain model here
@@ -329,6 +356,16 @@ Example:
 """
 model_folder_path = pathlib.Path(model_folder)
 def process_file(filepath, model_name=False):
+  f = open(filepath, "r")
+  altered_lines = []
+  for line in f.readlines():
+    altered_line = line.replace("\"", "")
+    altered_lines.append(altered_line)
+  f = open(filepath, "w")
+
+  for altered_line in altered_lines:
+    f.write(altered_line)
+
   # If no model is specified, grab the newest
   if not model_name:
     models = list(model_folder_path.rglob("*.mod"))
