@@ -13,6 +13,7 @@ import csv
 import json
 import pathlib
 import threading
+import xml.etree.cElementTree as ET
 
 from flask.helpers import send_from_directory
 
@@ -98,7 +99,7 @@ ext: the extension to save the file as
 form_input_name: the name of the form input to get data from
 """
 # Pass the request object,  the extension and 
-def save_data_to_tmp(request, ext, form_input_name=None):
+def save_data_to_tmp(request, ext,  form_input_name=None):
   print("request")
 
   print(request)
@@ -106,23 +107,22 @@ def save_data_to_tmp(request, ext, form_input_name=None):
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
   temp_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + ext
- 
+  return save_data(request, temp_filename, form_input_name)
+
+def save_data(request, filename, form_input_name=None):
   # If a string was directly given (no direct file upload), save it to a file
   if len(request.files) <= 0:
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
     data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
-    save_data(temp_filename, data)
-    
+    file_from_string = open(filename, "w", encoding="utf-8")
+    file_from_string.write(data)
+    file_from_string.close()
   else:
     # If a file is getting uploaded, save it as well
-    request.files['file'].save(temp_filename)
-  return temp_filename
+    request.files['file'].save(filename)
+  return filename
 
-def save_data(filename, data):
-  file_from_string = open(filename, "w", encoding="utf-8")
-  file_from_string.write(data)
-  file_from_string.close()
 
 """
 Parse citation strings from plain text, with one citation per line. This is the most ideal method
@@ -287,9 +287,13 @@ def parse():
   
 
 def remove_files(files):
-  for file in files:
-    os.remove(file)
-  print("Removed")
+  try:
+    for file in files:
+      os.remove(file)
+    print("Removed")
+  except Exception as e:
+    print("Error while removing")
+    print(e)
 
 
 def header_boolean(header_value, default):
@@ -397,24 +401,18 @@ def train():
   # Lowercase and secure model name
   model_name = model_name.lower().rstrip(".mod")
 
-  # XML -> train_and_check
-  if "xml" in content_type:
-    input_type = "xml"
-    input_filename = save_data_to_tmp(request, input_type)
+  model_path = model_folder + "/data/models/" + model_name + ".mod"
+  data_path = model_path + ".xml"
+  model_exists = os.path.exists(model_path)
 
-  # CSV -> train_year_models
   if "csv" in content_type:
     input_type = "csv"
     input_csv = save_data_to_tmp(request, input_type)
-    input_filename = input_csv.replace("csv", "xml")
-    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
+    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
 
     input_filenames.append(input_csv)
-  input_filenames.append(input_filename)
   
-
-  model_path = model_folder + "/data/models/" + model_name + ".mod"
-  model_exists = os.path.exists(model_path)
+  save_data(request, data_path)
 
   if model_exists:
     shutil.copy2(model_path, model_path + ".bak")
@@ -430,8 +428,10 @@ def train():
     if overwrite and model_exists:
       # TODO APPEND!!
       os.remove(model_path)
-      
-    command = f'anystyle train "{input_filename}" "model/data/models/{model_name}.mod"'
+  
+
+    command = f'anystyle train "{data_path}" "model/data/models/{model_name}.mod"'
+    print(command)
     output = subprocess.check_output(command, shell=True)
 
     remove_in_background(input_filenames)
@@ -443,7 +443,10 @@ def train():
     # Remove the new model if it exists
     if os.path.exists(model_path):
       os.remove(model_path)
-    shutil.copy2(model_path + ".bak", model_path)
+    
+    # Only try to recover if it exists
+    if model_exists:
+      shutil.copy2(model_path + ".bak", model_path)
 
     remove_in_background(input_filenames)
     return index_error(500, e)
