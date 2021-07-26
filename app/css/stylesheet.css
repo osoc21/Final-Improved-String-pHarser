@@ -190,13 +190,9 @@ input[type=submit]:hover {
 }
 
 #citations-select {
-  width:50vw;
-}
-
-#citations-select option {
-  width:50vw;
+  width: 50vw;
 }
 
 #json-div {
-    padding: 15px;
+  padding: 15px;
 }
