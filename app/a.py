@@ -12,6 +12,7 @@ import csv
 import json
 import pathlib
 import threading
+import xml.etree.cElementTree as ET
 
 from flask.helpers import send_from_directory
 
@@ -97,7 +98,7 @@ ext: the extension to save the file as
 form_input_name: the name of the form input to get data from
 """
 # Pass the request object,  the extension and 
-def save_data_to_tmp(request, ext, form_input_name=None):
+def save_data_to_tmp(request, ext,  form_input_name=None):
   print("request")
 
   print(request)
@@ -105,23 +106,22 @@ def save_data_to_tmp(request, ext, form_input_name=None):
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
   temp_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + ext
- 
+  return save_data(request, temp_filename, form_input_name)
+
+def save_data(request, filename, form_input_name=None):
   # If a string was directly given (no direct file upload), save it to a file
   if len(request.files) <= 0:
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
     data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
-    save_data(temp_filename, data)
-    
+    file_from_string = open(filename, "w", encoding="utf-8")
+    file_from_string.write(data)
+    file_from_string.close()
   else:
     # If a file is getting uploaded, save it as well
-    request.files['file'].save(temp_filename)
-  return temp_filename
+    request.files['file'].save(filename)
+  return filename
 
-def save_data(filename, data):
-  file_from_string = open(filename, "w", encoding="utf-8")
-  file_from_string.write(data)
-  file_from_string.close()
 
 """
 Parse citation strings from plain text, with one citation per line. This is the most ideal method
@@ -166,11 +166,44 @@ For the form:
 
 """
 CITATION_STRING_CONST = "citationstring"
+# Currently only support from form
 @api.route('/retrain', methods=['POST'])
 def retrain():
-  if request.form and CITATION_STRING_CONST not in request.form:
+  model_name = request.form["model"]
+
+  print(model_name)
+
+  model_path = select_model(model_name)
+  model_data_path = model_path + ".xml"
+  model_data = ET.parse(model_data_path)
+
+  dataset = model_data.getroot()
+  sequence = ET.SubElement(dataset, "sequence")
+
+  keys = request.form.keys()
+  for key in keys:
+    print(key)
+    # Don't add model-name to XML
+    if key == "model-name":
+      continue
+
+    value = request.form[key]
+    print("  " + value)
+
+    
+    ET.SubElement(sequence, key).text = value
+
+    
+  
+  model_data.write(model_data_path)
+
+  print("training")
+  train_model(model_path, model_data_path, overwrite=True)
+  print("trained")
+
+  #if request.form:
     # TODO: retrain model here
-    return index_success(200, "Successfully updated model. Thank you for your contribution")
+  return index_success(200, "Successfully updated model. Thank you for your contribution")
 
 def process_pdf_file(file_path):
   path = os.path.dirname(file_path)
@@ -310,13 +343,17 @@ def parse():
     "data": data,
     "original_strings": original_strings
   }
-  return render_template("response.html", data=return_data)
+  return render_template("response.html", data=return_data, model=used_model)
   
 
 def remove_files(files):
-  for file in files:
-    os.remove(file)
-  print("Removed")
+  try:
+    for file in files:
+      os.remove(file)
+    print("Removed")
+  except Exception as e:
+    print("Error while removing")
+    print(e)
 
 
 def header_boolean(header_value, default):
@@ -414,43 +451,16 @@ Example usage: select_model("examples-300.mod")
 Example return: model/examples-300.mod
 """
 def select_model(model_name):
-  model_path = model_folder + model_name + ".mod"
+  print(model_name)
+  model_name = model_name.rstrip(".mod")
+  model_path = str(next(model_folder_path.rglob(model_name + ".mod")))
 
   if os.path.isfile(model_path):
     return model_path
   else:
     raise FileNotFoundError
 
-
-#train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
-@api.route('/train', methods=['POST'])
-def train():
-  content_type = request.headers.get("content-type")
-  model_name = request.headers.get("model-name")
-  overwrite = header_boolean(request.headers.get("overwrite"), default=False)
-
-  input_filenames = []
-
-  # Lowercase and secure model name
-  model_name = model_name.lower().rstrip(".mod")
-
-  # XML -> train_and_check
-  if "xml" in content_type:
-    input_type = "xml"
-    input_filename = save_data_to_tmp(request, input_type)
-
-  # CSV -> train_year_models
-  if "csv" in content_type:
-    input_type = "csv"
-    input_csv = save_data_to_tmp(request, input_type)
-    input_filename = input_csv.replace("csv", "xml")
-    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{input_filename}"', shell=True))
-
-    input_filenames.append(input_csv)
-  input_filenames.append(input_filename)
-  
-
-  model_path = model_folder + "/data/models/" + model_name + ".mod"
+def train_model(model_path, data_path, overwrite, input_filenames=[]):
   model_exists = os.path.exists(model_path)
 
   if model_exists:
@@ -467,8 +477,10 @@ def train():
     if overwrite and model_exists:
       # TODO APPEND!!
       os.remove(model_path)
-      
-    command = f'anystyle train "{input_filename}" "model/data/models/{model_name}.mod"'
+  
+
+    command = f'anystyle train "{data_path}" "{model_path}"'
+    print(command)
     output = subprocess.check_output(command, shell=True)
 
     remove_in_background(input_filenames)
@@ -480,11 +492,40 @@ def train():
     # Remove the new model if it exists
     if os.path.exists(model_path):
       os.remove(model_path)
-    shutil.copy2(model_path + ".bak", model_path)
+    
+    # Only try to recover if it exists
+    if model_exists:
+      shutil.copy2(model_path + ".bak", model_path)
 
     remove_in_background(input_filenames)
     return index_error(500, e)
 
+
+#train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
+@api.route('/train', methods=['POST'])
+def train():
+  content_type = request.headers.get("content-type")
+  model_name = request.headers.get("model-name")
+  overwrite = header_boolean(request.headers.get("overwrite"), default=False)
+
+  input_filenames = []
+
+  # Lowercase and secure model name
+  model_name = model_name.lower().rstrip(".mod")
+
+  model_path = model_folder + "/data/models/" + model_name + ".mod"
+  data_path = model_path + ".xml"
+
+  if "csv" in content_type:
+    input_type = "csv"
+    input_csv = save_data_to_tmp(request, input_type)
+    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
+
+    input_filenames.append(input_csv)
+  
+  save_data(request, data_path)
+
+  train_model(model_path, data_path, overwrite, input_filenames)
   
 
 
