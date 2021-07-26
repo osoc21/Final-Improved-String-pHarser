@@ -34,8 +34,7 @@
          <p class="text_center success_message">{{data.response}}</p>
       {% endif %}
     {% endif %}
-    <!-- Upload file form -->
-    <form method="POST" enctype="multipart/form-data" action="/parse">
+    <form method="POST" enctype="multipart/form-data" action="/parse/file">
       <div id="fileButtonDiv" class="file-button" >
         <!-- type=button is essential, otherwise it'll submit by default -->
         <button type="button" id="fileButton">Choose File</button>
@@ -49,10 +48,10 @@
           {% endfor %}
       </select>
       <input type="submit" id="submit_file_button" class="center" onclick="rotate()" value="Submit file">
+      <input type="hidden" name="from-website" value="1">
     </form>
     <br>
-    <!-- Upload citation string form -->
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" action="/parse/string">
         <label for="citation" class="center_label">Citation:</label><br>
         <textarea id="citation" class="center" rows="4" cols="50" name="citationstring" placeholder="Paste your citation string(s)"></textarea>
         <select class="center" name="model-name">
@@ -63,6 +62,7 @@
         </select>
         <br><br>
         <input type="submit" id="submit_citation_button" class="center" onclick="rotate()" value="Submit citation strings">
+        <input type="hidden" name="from-website" value="1">
     </form>
 </div>
 

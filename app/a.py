@@ -2,7 +2,7 @@
 
 # POST fish.com/ DATA --> return json
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from flask_swagger_ui import get_swaggerui_blueprint
 import subprocess
 import os
@@ -128,48 +128,6 @@ def save_data(request, filename, form_input_name=None):
   return filename
 
 
-"""
-Parse citation strings from plain text, with one citation per line. This is the most ideal method
-
-URL: domain.com/parse
-Method: POST
-Content-Type: text/plain
-
----
-
-Parse citation strings from a csv string into an array of JSON objects.
-
-URL: domain.com/parse
-Method: POST
-Headers:
-  Content-Type: text/csv
-  Ignore-Firstline: {boolean, optional, defaults to True}
-    (
-      Ignore the firstline. Set to true if first line is a header, for example,: String,Authors,Year...
-      Valid values: false, False, true, True, 1, 0
-    )
-  Single-Column: {int, optional, defaults to -1}
-    (
-      Only keep the data in the column with index int
-      Won't have effect if not set
-      Example situation: a csv file with Citationstring,Authors,Year,Title,Book --> use index 0
-    )
-
----
-
-Parse citation strings from a html-uploaded file into an array of JSON objects.
-This will automatically decide which filetype it is (csv, plain...)
-
-URL: domain.com/parse
-Method: POST
-Content-Type: multipart/form-data
-
-For the form:
-  <form enctype="multipart/form-data">
-    <input type="file" name="file">
-    ...
-
-"""
 CITATION_STRING_CONST = "citationstring"
 # Currently only support from form
 @api.route('/retrain', methods=['POST'])
@@ -233,105 +191,158 @@ def parse_pdf():
   }
   return render_template("response.html", data=return_data)
 
-@api.route('/parse', methods=['POST'])
-def parse():
-  # Step 1: figure out what kind of input is given
-  content_type = request.headers.get("content-type")
 
-  if "multipart/form-data" in content_type:
-    input_type = "form"
-  elif "text/plain" in content_type:
-    input_type = "txt"
-  elif "csv" in content_type:
-    input_type = "csv"
-  elif "pdf" in content_type:
-    input_type = "pdf"
+def get_model_from_request(request):
+  try:
+    model_name = request.form["model-name"] or request.headers.get("model-name")
+  except KeyError:
+    # If model_name not defined, set to empty to grab a random
+    model_name = ""
+  finally:
+    model_name = select_model(model_name)
+    return model_name
 
-  # If a form is used to send a file
+
+"""
+  Parse citation strings from a html-uploaded file into an array of JSON objects.
+  This will automatically decide which filetype it is (csv, plain...)
+
+  URL: domain.com/parse
+  Method: POST
+  Content-Type: multipart/form-data
+
+  For the form:
+    <form enctype="multipart/form-data">
+      <input type="file" name="file">
+      ...
+"""
+# parse/file is meant for use in forms. Thus it will simply redirect into the appropiate parse function
+@api.route('/parse-file', methods=['POST'])
+@api.route('/parse/file', methods=['POST'])
+def parse_file():
   if len(request.files) >= 1:
     old_filename = request.files['file'].filename.lower()
     # Check for allowed formats
     if old_filename.endswith("csv"):
-      input_type = "csv"
+      return parse_csv() # redirect("/parse/csv", code=307)  # 307 https://stackoverflow.com/a/15480983
     elif old_filename.endswith("txt") or old_filename.endswith("ref"):
-      input_type = "txt"
-    elif old_filename.endswith("pdf"):
-      input_type = "pdf"
+      return parse_str()
     else:
       # If a non-supported format gets uploaded, return 422
       return index_error(422, "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.")
-  # If input type couldn't be determined, assume plaintext
   else:
-    input_type = "txt"
-
-  # Step 2: put the input in a form that anystyle-cli can work with
-  """
-  https://github.com/inukshuk/anystyle-cli
-    The input argument can be a single text document containing one full
-    reference per line (blank lines will be ignored), or a folder containing
-    multiple documents. The (optional) output argument specifies
-    the folder where the results shall be saved; if no output folder is
-    specified, results will be saved in the folder containing the input.
-
-    ...
-
-    ref     One reference per line, suitable for parser input;
-    txt     Same as `ref';
-
-    ...
+      return index_error(422, "No data found in input")
 
 
-  From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input
-  """
+"""
+  parse_csv will convert a csv file into a citation string txt file
+  Parse citation strings from a csv string into an array of JSON objects.
+
+  URL: domain.com/parse/csv
+  Method: POST
+  Headers:
+    Ignore_Firstline: {boolean, optional, defaults to True}
+      (
+        Ignore the firstline. Set to true if first line is a header, for example,: String,Authors,Year...
+        Valid values: false, False, true, True, 1, 0
+      )
+    Single_Column: {int, optional, defaults to -1}
+      (
+        Only keep the data in the column with index int
+        Won't have effect if not set
+        Example situation: a csv file with Citationstring,Authors,Year,Title,Book --> use index 0
+      )
+"""
+@api.route('/parse-csv', methods=['POST'])
+@api.route('/parse/csv', methods=['POST'])
+def parse_csv():
+  input_filename = save_data_to_tmp(request, "csv")
+  input_filename_csv = input_filename
+  input_filename = input_filename_csv.replace("csv", "txt")
+
+  print(request.headers.get("model-name"))
+  print(request.headers.get("Single-Column"))
+
+  ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
+  single_column = header_int(request.headers.get("Single-Column"), default=-1)
+
+  print(ignore_firstline)
+  print(single_column)
+
+  with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
+    csv_reader = csv.reader(original_csv, delimiter=",")
+    csv_data = []
+    for row in csv_reader:
+      if ignore_firstline:
+        ignore_firstline = False  # Don't ignore after the first continue
+        continue  # Skip the csv_data append for the first line
+
+      if single_column <= -1:
+        csv_data.append(", ".join(row) + "\n")
+      else:
+        try:
+          csv_data.append(row[single_column] + "\n")
+        except IndexError:
+          pass
+    with open(input_filename, "w", encoding="utf-8") as input_file:
+      input_file.writelines(csv_data)
+
+  model = get_model_from_request(request)
+  return parse_to_citations(input_filename, model, {input_filename, input_filename_csv})
   
-  input_filename = save_data_to_tmp(request, input_type, CITATION_STRING_CONST)
-  input_filenames = [input_filename]  # List of filenames to clean later
 
-  """ 
+"""
+  Parse citation strings from plain text, with one citation per line. This is the most ideal method
+
+  URL: domain.com/parse
+  Method: POST
+"""
+@api.route('/parse', methods=['POST'])
+@api.route('/parse-string', methods=['POST'])
+@api.route('/parse/string', methods=['POST'])
+def parse_str():
+  input_filename = save_data_to_tmp(request, "txt")
+  model = get_model_from_request(request)
+  return parse_to_citations(input_filename, model)
+
+def parse_to_citations(filename, model, input_filenames=set()):
+  """
+  parse_to_citations parses a file containing citations, one citation per line.
+  The input file should be converted into a ref or txt file before calling this function, see below
+  Pass a str(filename) and str(modelname). Modelname will be automatically recursively searched for, so you don't need to be super precise
+
+  From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input:
+    https://github.com/inukshuk/anystyle-cli
+      The input argument can be a single text document containing one full
+      reference per line (blank lines will be ignored), or a folder containing
+      multiple documents. The (optional) output argument specifies
+      the folder where the results shall be saved; if no output folder is
+      specified, results will be saved in the folder containing the input.
+
+      ...
+
+      ref     One reference per line, suitable for parser input;
+      txt     Same as `ref';
+
+      ...
+
+      
   Example of a line as provided in a .csv file by VLIZ:
   Krohling, W., & Zalmon, I. R. 2008. Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology 51: 213-221.
   """
-  if input_type == "pdf":
-    return parse_pdf()
 
-  if input_type == "csv":
-    input_filename_csv = input_filename
-    input_filename = input_filename_csv.replace("csv", "txt")
-    input_filenames.append(input_filename)
-
-    ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
-    single_column = header_int(request.headers.get("Single-Column"), default=-1)
-
-    with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
-      csv_reader = csv.reader(original_csv, delimiter=",")
-      csv_data = []
-      for row in csv_reader:
-        if ignore_firstline:
-          ignore_firstline = False  # Don't ignore after the first continue
-          continue  # Skip the csv_data append for the first line
-
-        if single_column <= -1:
-          csv_data.append(", ".join(row) + "\n")
-        else:
-          try:
-            csv_data.append(row[single_column] + "\n")
-          except IndexError:
-            pass
-      with open(input_filename, "w", encoding="utf-8") as input_file:
-        input_file.writelines(csv_data)
-
+  input_filenames.add(filename)  # Set of filenames to clean later
 
   # Step 3: run anystyle and return the result
-  model_name = request.form["model-name"] or request.headers.get("model-name")
-  data, used_model = process_file(input_filename, model_name)
+  data, used_model = process_file(filename, model)
 
   original_strings = []
-  with open(input_filename, "r", encoding="utf-8") as f:
+  with open(filename, "r", encoding="utf-8") as f:
     lines = f.readlines()
     for line in lines:
       original_strings.append(line.strip("\n"))
 
-  remove_in_background(input_filenames)
+  #remove_in_background(input_filenames)
 
   """
   if request.form and CITATION_STRING_CONST not in request.form:
@@ -339,16 +350,17 @@ def parse():
     return index_success(200, "Successfully updated model. Thank you for your contribution")
   """
 
-  if len(data) <= 0:
-      return index_error(422, "No data found in input")
-
-  print("Returning data...")
   return_data = {
     "model": used_model,
     "data": data,
     "original_strings": original_strings
   }
-  return render_template("response.html", data=return_data, model=used_model)
+
+    # If the request comes from the website
+  if request.values.get('from-website', default=False):
+    return render_template("response.html", data=return_data, model=used_model)
+  else:
+    return return_data
   
 
 def remove_files(files):
@@ -406,8 +418,10 @@ Example:
   Usage: process_file("citation.txt", "examples-300")
   Return: [str(anystyle json array), str(path to model used)]
 """
+
 model_folder_path = pathlib.Path(model_folder)
 def process_file(filepath, model_name=False):
+  """
   f = open(filepath, "r")
   altered_lines = []
   for line in f.readlines():
@@ -419,19 +433,12 @@ def process_file(filepath, model_name=False):
 
   for altered_line in altered_lines:
     f.write(altered_line)
-  f.close()
-  # If no model is specified, grab the newest
-  if not model_name:
-    models = list(model_folder_path.rglob("*.mod"))
-    model = max(models, key=os.path.getctime)
-  else:
-    # Since the model will be recursively globbed to be found, remove any path/extension
-    model_name = no_path_no_ext(model_name)
-    model = next(model_folder_path.rglob(model_name + ".mod"))
+  """
   
-  # rglob may return WindowsPath, so convert to str
-  model = str(model)
-  data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True)
+  model = select_model(model_name)
+  print('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"')
+  data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', stderr=subprocess.STDOUT, shell=True)
+  print(data)
   data = json.loads(data)
 
   # Remove type field
@@ -458,15 +465,36 @@ Example usage: select_model("examples-300.mod")
 Example return: model/examples-300.mod
 """
 def select_model(model_name):
-  print(model_name)
-  model_name = model_name.rstrip(".mod")
-  model_path = str(next(model_folder_path.rglob(model_name + ".mod")))
+  # Since the model will be recursively globbed to be found, remove any path/extension
+
+  model_name = no_path_no_ext(model_name)
+  try:
+    model_path = str(next(model_folder_path.rglob(model_name + ".mod")))
+  except StopIteration:
+    models = list(model_folder_path.rglob("*.mod"))
+    model_path = max(models, key=os.path.getctime)
 
   if os.path.isfile(model_path):
     return model_path
   else:
     raise FileNotFoundError
 
+"""
+train_model: use anystyle-cli's train method to train a new model
+
+Note that this is mainly used internally from the /train and /retrain endpoints
+
+Arguments: 
+  > model_path: str. Path to model. This can be an existing you want to overwrite, or a non-existing one to make a fully new model
+  > data_path: str. Path to the training data. This data (formatted in XML) will be used to train the model in question, and will be saved alongside it (for retraining, see retrain)
+  > overwrite: bool. Whether to overwrite the existing model in case model_path points to one
+  > input_filenames: iterable<str>, optional. The paths to files that have to be removed after everything's done
+
+Example:
+  Usage: train_model("year-models/1926-1950.mod", "year-models/1926-1950.mod.xml", True)
+  return: str(anystyle-cli stdout)
+
+"""
 def train_model(model_path, data_path, overwrite, input_filenames=[]):
   model_exists = os.path.exists(model_path)
 
@@ -507,11 +535,20 @@ def train_model(model_path, data_path, overwrite, input_filenames=[]):
     remove_in_background(input_filenames)
     return index_error(500, e)
 
+"""
+/train: pass a model name
 
-#train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
+
+Body:
+  > a string, formatted in XML. See Anystyle documentation for more info
+
+Headers:
+  > model-name: str. The name of the model
+  > overwrite: bool. Whether to overwrite the existing model in case model-name points to one
+"""
 @api.route('/train', methods=['POST'])
+@api.route('/train-xml', methods=['POST'])
 def train():
-  content_type = request.headers.get("content-type")
   model_name = request.headers.get("model-name")
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
 
@@ -522,54 +559,36 @@ def train():
 
   model_path = model_folder + "/data/models/" + model_name + ".mod"
   data_path = model_path + ".xml"
-
-  if "csv" in content_type:
-    input_type = "csv"
-    input_csv = save_data_to_tmp(request, input_type)
-    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
-
-    input_filenames.append(input_csv)
   
   save_data(request, data_path)
 
   train_model(model_path, data_path, overwrite, input_filenames)
   
+  return index_success(200, "Successfully trained model!")
+  
+"""
+Training from CSV
 
+@api.route('/train-csv', methods=['POST'])
+def train_from_csv():
+  input_csv = save_data_to_tmp(request, "csv")
+  print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
+"""
 
 # Serve CSS until it's handled by something else
 @api.route('/css/<path:path>')
 def css(path):
     return send_from_directory('css', path)
 
-
 # And the same for assets
 @api.route('/assets/<path:path>')
 def assets(path):
     return send_from_directory('assets', path)
 
-
+# And the same for JS
 @api.route('/js/<path:path>')
 def js(path):
   return send_from_directory('js', path)
-
-
-
-# Upload citation string
-'''@api.route('/', methods=['POST'])
-def post_data():
-  print("POSTINGGG")
-  if request.files.get('data_file'):
-    f = request.files['data_file']
-  print(f)
-  stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
-  csv_input = csv.reader(stream)
-    #print("file contents: ", file_contents)
-    #print(type(file_contents))
-  print(csv_input)
-  for row in csv_input:
-    print(row)
-
-  return render_template("index.html")'''
 
 try:
   os.mkdir(temporary_folder)
