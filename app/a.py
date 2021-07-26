@@ -293,6 +293,7 @@ def parse_csv():
   Method: POST
 """
 @api.route('/parse', methods=['POST'])
+@api.route('/parse-string', methods=['POST'])
 @api.route('/parse/string', methods=['POST'])
 def parse_str():
   input_filename = save_data_to_tmp(request, "txt")
