@@ -173,23 +173,23 @@ def retrain():
     return index_success(200, "Successfully updated model. Thank you for your contribution")
 
 def process_pdf_file(file_path):
-  path = file_path.split("/")[:len(file_path.split("/")) - 1]
-  print(path)
+  path = os.path.dirname(file_path)
   path = ''.join(path)
   file_name = file_path.split("/")[len(file_path.split("/")) - 1]
   #subprocess.check_output('python3 ./hello.py', shell=True)
-  print('python3 grobid_client_python/example.py' + ' ' + path + ' ' + file_name)
   data = subprocess.check_output('python3 grobid_client_python/example.py' + ' ' + path + ' ' +
                                  file_name, shell=True)
+  print("data")
+
   print(data)
+  return data
 
 def parse_pdf():
   #model_name = request.headers.get("model-name")
   input_filename = GROBID_PATH + temporary_folder + request.files['file'].filename
-  data, used_model = process_pdf_file(input_filename)#, model_name)
+  data = process_pdf_file(input_filename)#, model_name)
   print(input_filename)
   return_data = {
-    "model": used_model,
     "data": data,
     "original_strings": ""
   }
@@ -206,8 +206,8 @@ def parse():
     input_type = "txt"
   elif "csv" in content_type:
     input_type = "csv"
-  #elif "pdf" in content_type:
- #   input_type = "pdf"
+  elif "pdf" in content_type:
+    input_type = "pdf"
 
   # If a form is used to send a file
   if len(request.files) >= 1:
@@ -217,8 +217,8 @@ def parse():
       input_type = "csv"
     elif old_filename.endswith("txt") or old_filename.endswith("ref"):
       input_type = "txt"
- #   elif old_filename.endswith("pdf"):
-  #    input_type = "pdf"
+    elif old_filename.endswith("pdf"):
+      input_type = "pdf"
     else:
       # If a non-supported format gets uploaded, return 422
       return index_error(422, "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.")
@@ -253,8 +253,8 @@ def parse():
   Example of a line as provided in a .csv file by VLIZ:
   Krohling, W., & Zalmon, I. R. 2008. Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology 51: 213-221.
   """
-#  if input_type == "pdf":
- #   return parse_pdf()
+  if input_type == "pdf":
+    return parse_pdf()
 
   if input_type == "csv":
     input_filename_csv = input_filename
