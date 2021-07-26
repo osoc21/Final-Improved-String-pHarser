@@ -22,6 +22,7 @@
 </div>
 </div>
 <script>
+//Function to make the crest rotate
 function rotate(){
     document.getElementById("crest").classList.add('rotate');
 }
@@ -47,6 +48,8 @@ function rotate(){
         <p class="text_center"><label for="citations-select" class="text_center">Choose a citation:</label></p>
         <select class="center" name="citations" id="citations-select" onchange="handleSelectChange()" >
             <option value="" disabled selected>Select citation</option>
+            <!-- For each parsed citation the longest part is selected as display value for the selection box -->
+            <!-- Firstly find the lengths of the longest parts for each citation and keep it in a list -->
             {% set longestPartsLengths = [] %}
             {% for citation in data.data %}
                 {% set longest = namespace(value=0) %}
@@ -59,7 +62,8 @@ function rotate(){
                 {% endfor %}
                 {{  longestPartsLengths.append(longest.value) }}
             {% endfor %}
-
+            <!-- Secondly find the the longest parts by checking which part has the longest length as calculated earlier -->
+            <!-- Add a new option value for this longest part -->
             {% set count = namespace(value=0) %}
             {% for citation in data.data %}
                 {% for key, value in citation.items() %}
@@ -80,8 +84,9 @@ function rotate(){
 
 
     <script type="text/javascript">
-
+        // Parse the JSON passed to the template
         const data = JSON.parse('{{ data | tojson }}');
+        // Render the JSON in a pretty visual format
         function render() {
             const source = document.querySelector('#json-renderer');
             const dest = document.querySelectorAll('.path');
@@ -89,25 +94,30 @@ function rotate(){
             // Browser
             JPPicker.render(source, data, dest, options);
         }
+        // Handle a new citation being selected in the select element
         function handleSelectChange() {
             render();
             const form = document.getElementById("citation-change-form");
-
+            // Clear any previous HTML
             form.innerHTML= ""
+            // Add a new text form that allows the user for feedback to the model
             form.innerHTML += '<input type="text" name="model" value="' + data["model"] +  '">';
 
             const fields = ["Authors","Year","Title","Book","Series","Publisher",
                 "City","Volume","Issue","Pagination","DOI"];
 
+            // Get the index of the selected citation
             const e = document.getElementById("citations-select");
 
             // -1 due to selection placeholder at first index
             const citation_index = e.selectedIndex - 1;
 
+            // Add "Correct mistakes" text
             let textNode = document.createElement("p");
             textNode.innerHTML = "Correct mistakes";
             document.getElementById("citation-change-form").prepend(textNode);
 
+            // Display the original citation
             let original_citation = data["original_strings"][citation_index]
 
             textNode = document.createElement("p");
@@ -117,16 +127,19 @@ function rotate(){
 
             document.getElementById("citation-change-form").prepend(textNode);
 
+            // Add "Original citation" text
             textNode = document.createElement("p");
             textNode.innerHTML = "Original citation:";
             document.getElementById("citation-change-form").prepend(textNode);
 
-
+            // For each citation field add a textbox in the form containing the parsed output and allowing the user
+            // to make modifications
             fields.forEach(field => {
 
                 const divNode = document.createElement("div");
                 divNode.setAttribute("margin-bottom", "10px")
 
+                // Add the name of the field next to textbox
                 const labelNode = document.createElement("label");
                 labelNode.setAttribute("for", field);
                 labelNode.style.color = "white";
@@ -134,6 +147,7 @@ function rotate(){
                 labelNode.style.fontSize = "30px"
                 divNode.style.textAlign = "center"
 
+                // Add a text field for the user feedback
                 const inputNode = document.createElement("input");
                 inputNode.setAttribute("type", "text")
                 inputNode.setAttribute("id", field)
@@ -141,6 +155,7 @@ function rotate(){
                 inputNode.setAttribute("class", "center")
                 inputNode.setAttribute("size", "100")
 
+                // If the parsed citation has a value for this field then use it as placeholder
                 if (field in data.data[citation_index]) {
                     inputNode.setAttribute("value", data.data[citation_index][field][0])
                 }
@@ -156,6 +171,7 @@ function rotate(){
 
             })
 
+            // Add a submit button to the end of the input form
             const submitNode = document.createElement("input")
             submitNode.setAttribute("type", "submit")
             submitNode.setAttribute("value", "Retrain model")
