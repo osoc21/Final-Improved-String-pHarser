@@ -73,7 +73,12 @@ def get_contact_page():
     return render_template("contact.html")
 
 def get_all_models():
-  return list(model_folder_path.rglob("*.mod"))
+  file_paths = list(model_folder_path.rglob("*.mod"))
+  res = []
+  for file_path in file_paths:
+    res.append(str(file_path).split("/")[len(str(file_path).split("/")) - 1])
+  return res
+
 
 
 def index_error(err_code, message):
