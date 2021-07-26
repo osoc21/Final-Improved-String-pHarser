@@ -408,6 +408,7 @@ Example:
 """
 model_folder_path = pathlib.Path(model_folder)
 def process_file(filepath, model_name=False):
+  """ TODO this currently removes all data, oh no
   f = open(filepath, "r")
   altered_lines = []
   for line in f.readlines():
@@ -417,6 +418,7 @@ def process_file(filepath, model_name=False):
 
   for altered_line in altered_lines:
     f.write(altered_line)
+  """
 
   # If no model is specified, grab the newest
   if not model_name:
