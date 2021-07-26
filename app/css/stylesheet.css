@@ -188,3 +188,11 @@ input[type=submit]:hover {
     width: 50vw;
     height: 80vh;
 }
+
+#citations-select {
+  width: 50vw;
+}
+
+#json-div {
+  padding: 15px;
+}

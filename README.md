@@ -1,7 +1,14 @@
 ﻿# Final-Improved-String-pHarser
 
 ## About
-...
+The Final Improved String pHarser (FISH) has been made during Open Summer of Code 2021, this project is dedicated to split a scientific reference into its relevant components and return the result as a downloadable json file.
+The current features available include: parsing a single reference, parsing a file of references (see "example data" under "app" for valid formats), and extracting references from a pdf.
+These features are based on already available open source projects and integrate/combine functionalities of these alternatives.   
+The first two features are mainly build with the code of [Anystyle.io](https://anystyle.io/), which provides one of the best services for this purpose.
+Instead of using their default model however, the model behind FISH is trained on data provided by the flemish marine institute, consisting of around 2000 example
+references with no fixed format, going back to the mid 18th century.   
+For the last service, reading references from pdf, [Grobid](https://grobid.readthedocs.io/en/latest/) is used.
+Although they do not allow manual training, their service is high quality and well documented.
 
 ## Installation
 
