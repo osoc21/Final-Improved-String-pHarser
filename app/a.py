@@ -2,7 +2,7 @@
 
 # POST fish.com/ DATA --> return json
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from flask_swagger_ui import get_swaggerui_blueprint
 import subprocess
 import os
@@ -211,14 +211,19 @@ def get_model_from_request(request):
       <input type="file" name="file">
       ...
 """
-# parse/file is meant for use in forms. Thus it will simply redirect into the appropiate parse function  
+# parse/file is meant for use in forms. Thus it will simply redirect into the appropiate parse function
+@api.route('/parse-file', methods=['POST'])
 @api.route('/parse/file', methods=['POST'])
 def parse_file():
   if len(request.files) >= 1:
     old_filename = request.files['file'].filename.lower()
     # Check for allowed formats
     if old_filename.endswith("csv"):
-      return parse_csv()
+      print("--")
+      print(request.headers.get("model-name"))
+      print("--")
+
+      return parse_csv() # redirect("/parse/csv", code=307)  # 307 https://stackoverflow.com/a/15480983
     elif old_filename.endswith("txt") or old_filename.endswith("ref"):
       return parse_str()
     else:
@@ -254,8 +259,14 @@ def parse_csv():
   input_filename_csv = input_filename
   input_filename = input_filename_csv.replace("csv", "txt")
 
+  print(request.headers.get("model-name"))
+  print(request.headers.get("Single-Column"))
+
   ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
   single_column = header_int(request.headers.get("Single-Column"), default=-1)
+
+  print(ignore_firstline)
+  print(single_column)
 
   with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
     csv_reader = csv.reader(original_csv, delimiter=",")
@@ -276,7 +287,7 @@ def parse_csv():
       input_file.writelines(csv_data)
 
   model = get_model_from_request(request)
-  parse_to_citations(input_filename, model, {input_filename, input_filename_csv})
+  return parse_to_citations(input_filename, model, {input_filename, input_filename_csv})
   
 
 """
@@ -292,7 +303,7 @@ def parse_str():
   model = get_model_from_request(request)
   return parse_to_citations(input_filename, model)
 
-def parse_to_citations(filename, model, input_filenames={}):
+def parse_to_citations(filename, model, input_filenames=set()):
   """
   parse_to_citations parses a file containing citations, one citation per line.
   The input file should be converted into a ref or txt file before calling this function, see below
@@ -324,12 +335,12 @@ def parse_to_citations(filename, model, input_filenames={}):
   data, used_model = process_file(filename, model)
 
   original_strings = []
-  with open(input_filename, "r", encoding="utf-8") as f:
+  with open(filename, "r", encoding="utf-8") as f:
     lines = f.readlines()
     for line in lines:
       original_strings.append(line.strip("\n"))
 
-  remove_in_background(input_filenames)
+  #remove_in_background(input_filenames)
 
   """
   if request.form and CITATION_STRING_CONST not in request.form:
@@ -400,7 +411,7 @@ Example:
   Usage: process_file("citation.txt", "examples-300")
   Return: [str(anystyle json array), str(path to model used)]
 """
-pathlib.Stop
+
 model_folder_path = pathlib.Path(model_folder)
 def process_file(filepath, model_name=False):
   f = open(filepath, "r")
@@ -412,19 +423,11 @@ def process_file(filepath, model_name=False):
 
   for altered_line in altered_lines:
     f.write(altered_line)
-
-  # If no model is specified, grab the newest
-  if not model_name:
-    models = list(model_folder_path.rglob("*.mod"))
-    model = max(models, key=os.path.getctime)
-  else:
-    # Since the model will be recursively globbed to be found, remove any path/extension
-    model_name = no_path_no_ext(model_name)
-    model = next(model_folder_path.rglob(model_name + ".mod"))
   
-  # rglob may return WindowsPath, so convert to str
-  model = str(model)
-  data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', shell=True)
+  model = select_model(model_name)
+  print('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"')
+  data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', stderr=subprocess.STDOUT, shell=True)
+  print(data)
   data = json.loads(data)
 
   # Remove type field
@@ -451,10 +454,15 @@ Example usage: select_model("examples-300.mod")
 Example return: model/examples-300.mod
 """
 def select_model(model_name):
-  print(model_name)
-  model_name = model_name.rstrip(".mod")
-  model_path = str(next(model_folder_path.rglob(model_name + ".mod")))
-  
+  # Since the model will be recursively globbed to be found, remove any path/extension
+
+  model_name = no_path_no_ext(model_name)
+  try:
+    model_path = str(next(model_folder_path.rglob(model_name + ".mod")))
+  except StopIteration:
+    models = list(model_folder_path.rglob("*.mod"))
+    model_path = max(models, key=os.path.getctime)
+
   if os.path.isfile(model_path):
     return model_path
   else:
