@@ -227,6 +227,8 @@ def parse_file():
       return parse_csv() # redirect("/parse/csv", code=307)  # 307 https://stackoverflow.com/a/15480983
     elif old_filename.endswith("txt") or old_filename.endswith("ref"):
       return parse_str()
+    elif old_filename.endswith("pdf"):
+      return parse_pdf()
     else:
       # If a non-supported format gets uploaded, return 422
       return index_error(422, "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.")
@@ -552,6 +554,7 @@ Headers:
 def train():
   model_name = request.headers.get("model-name")
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
+  print(overwrite)
 
   input_filenames = []
 
