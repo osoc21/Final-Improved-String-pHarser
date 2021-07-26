@@ -219,10 +219,6 @@ def parse_file():
     old_filename = request.files['file'].filename.lower()
     # Check for allowed formats
     if old_filename.endswith("csv"):
-      print("--")
-      print(request.headers.get("model-name"))
-      print("--")
-
       return parse_csv() # redirect("/parse/csv", code=307)  # 307 https://stackoverflow.com/a/15480983
     elif old_filename.endswith("txt") or old_filename.endswith("ref"):
       return parse_str()
@@ -353,7 +349,12 @@ def parse_to_citations(filename, model, input_filenames=set()):
     "data": data,
     "original_strings": original_strings
   }
-  return render_template("response.html", data=return_data, model=used_model)
+
+    # If the request comes from the website
+  if request.values.get('from-website', default=False):
+    return render_template("response.html", data=return_data, model=used_model)
+  else:
+    return return_data
   
 
 def remove_files(files):
@@ -414,6 +415,7 @@ Example:
 
 model_folder_path = pathlib.Path(model_folder)
 def process_file(filepath, model_name=False):
+  """
   f = open(filepath, "r")
   altered_lines = []
   for line in f.readlines():
@@ -423,6 +425,7 @@ def process_file(filepath, model_name=False):
 
   for altered_line in altered_lines:
     f.write(altered_line)
+  """
   
   model = select_model(model_name)
   print('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"')

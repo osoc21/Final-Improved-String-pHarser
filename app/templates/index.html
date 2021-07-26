@@ -54,6 +54,7 @@ function rotate(){
           {% endfor %}
       </select>
       <input type="submit" id="submit_file_button" class="center" onclick="rotate()" value="Submit file">
+      <input type="hidden" name="from-website" value="1">
     </form>
     <br>
     <form method="POST" enctype="multipart/form-data" action="/parse/string">
@@ -67,6 +68,7 @@ function rotate(){
         </select>
         <br><br>
         <input type="submit" id="submit_citation_button" class="center" onclick="rotate()" value="Submit citation strings">
+        <input type="hidden" name="from-website" value="1">
     </form>
 </div>
 
