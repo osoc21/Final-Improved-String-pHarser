@@ -472,6 +472,22 @@ def select_model(model_name):
   else:
     raise FileNotFoundError
 
+"""
+train_model: use anystyle-cli's train method to train a new model
+
+Note that this is mainly used internally from the /train and /retrain endpoints
+
+Arguments: 
+  > model_path: str. Path to model. This can be an existing you want to overwrite, or a non-existing one to make a fully new model
+  > data_path: str. Path to the training data. This data (formatted in XML) will be used to train the model in question, and will be saved alongside it (for retraining, see retrain)
+  > overwrite: bool. Whether to overwrite the existing model in case model_path points to one
+  > input_filenames: iterable<str>, optional. The paths to files that have to be removed after everything's done
+
+Example:
+  Usage: train_model("year-models/1926-1950.mod", "year-models/1926-1950.mod.xml", True)
+  return: str(anystyle-cli stdout)
+
+"""
 def train_model(model_path, data_path, overwrite, input_filenames=[]):
   model_exists = os.path.exists(model_path)
 
@@ -512,11 +528,20 @@ def train_model(model_path, data_path, overwrite, input_filenames=[]):
     remove_in_background(input_filenames)
     return index_error(500, e)
 
+"""
+/train: pass a model name
 
-#train_and_check = str(next(model_folder_path.rglob("train_and_check.sh")))
+
+Body:
+  > a string, formatted in XML. See Anystyle documentation for more info
+
+Headers:
+  > model-name: str. The name of the model
+  > overwrite: bool. Whether to overwrite the existing model in case model-name points to one
+"""
 @api.route('/train', methods=['POST'])
+@api.route('/train-xml', methods=['POST'])
 def train():
-  content_type = request.headers.get("content-type")
   model_name = request.headers.get("model-name")
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
 
@@ -527,54 +552,34 @@ def train():
 
   model_path = model_folder + "/data/models/" + model_name + ".mod"
   data_path = model_path + ".xml"
-
-  if "csv" in content_type:
-    input_type = "csv"
-    input_csv = save_data_to_tmp(request, input_type)
-    print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
-
-    input_filenames.append(input_csv)
   
   save_data(request, data_path)
 
   train_model(model_path, data_path, overwrite, input_filenames)
   
+"""
+Training from CSV
 
+@api.route('/train-csv', methods=['POST'])
+def train_from_csv():
+  input_csv = save_data_to_tmp(request, "csv")
+  print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
+"""
 
 # Serve CSS until it's handled by something else
 @api.route('/css/<path:path>')
 def css(path):
     return send_from_directory('css', path)
 
-
 # And the same for assets
 @api.route('/assets/<path:path>')
 def assets(path):
     return send_from_directory('assets', path)
 
-
+# And the same for JS
 @api.route('/js/<path:path>')
 def js(path):
   return send_from_directory('js', path)
-
-
-
-# Upload citation string
-'''@api.route('/', methods=['POST'])
-def post_data():
-  print("POSTINGGG")
-  if request.files.get('data_file'):
-    f = request.files['data_file']
-  print(f)
-  stream = io.StringIO(f.stream.read().decode("UTF8"), newline=None)
-  csv_input = csv.reader(stream)
-    #print("file contents: ", file_contents)
-    #print(type(file_contents))
-  print(csv_input)
-  for row in csv_input:
-    print(row)
-
-  return render_template("index.html")'''
 
 try:
   os.mkdir(temporary_folder)
