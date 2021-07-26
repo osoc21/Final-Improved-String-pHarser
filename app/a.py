@@ -342,7 +342,7 @@ def parse_to_citations(filename, model, input_filenames=set()):
   data, used_model = process_file(filename, model)
 
   original_strings = []
-  with open(input_filename, "r", encoding="utf-8", newline='\n') as f:
+  with open(filename, "r", encoding="utf-8", newline='\n') as f:
     lines = f.readlines()
     for line in lines:
       original_strings.append(line.strip("\n"))
