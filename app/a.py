@@ -160,13 +160,8 @@ def retrain():
   
   model_data.write(model_data_path)
 
-  print("training")
-  train_model(model_path, model_data_path, overwrite=True)
-  print("trained")
+  return train_model(model_path, model_data_path, overwrite=True)
 
-  #if request.form:
-    # TODO: retrain model here
-  return index_success(200, "Successfully updated model. Thank you for your contribution")
 
 def process_pdf_file(file_path):
   path = os.path.dirname(file_path)
@@ -509,20 +504,14 @@ def train_model(model_path, data_path, overwrite, input_filenames=[]):
     if not overwrite and model_exists:
       return index_error(403, "Model already exists, and header 'overwrite' not set to True")
     elif overwrite and model_exists:
-      pass
-      
-    if overwrite and model_exists:
-      # TODO APPEND!!
       os.remove(model_path)
   
-
     command = f'anystyle train "{data_path}" "{model_path}"'
-    print(command)
     output = subprocess.check_output(command, shell=True)
 
     remove_in_background(input_filenames)
 
-    return output
+    return index_success(200, "Successfully updated model. Thank you for your contribution. Output: " + output)
   # On any crash, recover backup
   except Exception as e:
     print("Error during training")
@@ -566,10 +555,8 @@ def train():
   
   save_data(request, data_path)
 
-  train_model(model_path, data_path, overwrite, input_filenames)
-  
-  return index_success(200, "Successfully trained model!")
-  
+  return train_model(model_path, data_path, overwrite, input_filenames)
+    
 """
 Training from CSV
 
