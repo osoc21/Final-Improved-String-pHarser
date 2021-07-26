@@ -557,6 +557,8 @@ def train():
 
   train_model(model_path, data_path, overwrite, input_filenames)
   
+  return index_success(200, "Successfully trained model!")
+  
 """
 Training from CSV
 
