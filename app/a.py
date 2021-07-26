@@ -126,7 +126,8 @@ def save_data(request, filename, form_input_name=None):
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
     data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
-    file_from_string = open(filename, "w", encoding="utf-8")
+    print(data)
+    file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
     file_from_string.close()
   else:
@@ -334,6 +335,37 @@ def parse_to_citations(filename, model, input_filenames=set()):
   Example of a line as provided in a .csv file by VLIZ:
   Krohling, W., & Zalmon, I. R. 2008. Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology 51: 213-221.
   """
+<<<<<<< HEAD
+  if input_type == "pdf":
+    return parse_pdf()
+
+  if input_type == "csv":
+    input_filename_csv = input_filename
+    input_filename = input_filename_csv.replace("csv", "txt")
+    input_filenames.append(input_filename)
+
+    ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
+    single_column = header_int(request.headers.get("Single-Column"), default=-1)
+
+    with open(input_filename_csv, "r", encoding="utf-8", newline='\n') as original_csv:
+      csv_reader = csv.reader(original_csv, delimiter=",")
+      csv_data = []
+      for row in csv_reader:
+        if ignore_firstline:
+          ignore_firstline = False  # Don't ignore after the first continue
+          continue  # Skip the csv_data append for the first line
+
+        if single_column <= -1:
+          csv_data.append(", ".join(row) + "\n")
+        else:
+          try:
+            csv_data.append(row[single_column] + "\n")
+          except IndexError:
+            pass
+      with open(input_filename, "w", encoding="utf-8", newline='\n') as input_file:
+        input_file.writelines(csv_data)
+=======
+>>>>>>> 17643d6572744cba0adaddbf507afbee45d8be32
 
   input_filenames.add(filename)  # Set of filenames to clean later
 
@@ -341,7 +373,11 @@ def parse_to_citations(filename, model, input_filenames=set()):
   data, used_model = process_file(filename, model)
 
   original_strings = []
+<<<<<<< HEAD
+  with open(input_filename, "r", encoding="utf-8", newline='\n') as f:
+=======
   with open(filename, "r", encoding="utf-8") as f:
+>>>>>>> 17643d6572744cba0adaddbf507afbee45d8be32
     lines = f.readlines()
     for line in lines:
       original_strings.append(line.strip("\n"))
@@ -424,20 +460,44 @@ Example:
 """
 
 model_folder_path = pathlib.Path(model_folder)
+
 def process_file(filepath, model_name=False):
+<<<<<<< HEAD
+
+  f = open(filepath, "r", newline='\n')
+=======
   """
   f = open(filepath, "r")
+>>>>>>> 17643d6572744cba0adaddbf507afbee45d8be32
   altered_lines = []
   for line in f.readlines():
     altered_line = line.replace("\"", "")
     altered_lines.append(altered_line)
   f.close()
+<<<<<<< HEAD
+  f = open(filepath, "w", newline='\n')
+
+  for altered_line in altered_lines:
+    f.write(altered_line)
+  f.close()
+
+
+  # If no model is specified, grab the newest
+  if not model_name:
+    models = list(model_folder_path.rglob("*.mod"))
+    model = max(models, key=os.path.getctime)
+  else:
+    # Since the model will be recursively globbed to be found, remove any path/extension
+    model_name = no_path_no_ext(model_name)
+    model = next(model_folder_path.rglob(model_name + ".mod"))
+=======
 
   f = open(filepath, "w")
 
   for altered_line in altered_lines:
     f.write(altered_line)
   """
+>>>>>>> 17643d6572744cba0adaddbf507afbee45d8be32
   
   model = select_model(model_name)
   print('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"')
