@@ -119,7 +119,8 @@ def save_data(request, filename, form_input_name=None):
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
     data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
-    file_from_string = open(filename, "w", encoding="utf-8")
+    print(data)
+    file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
     file_from_string.close()
   else:
@@ -302,7 +303,7 @@ def parse():
     ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
     single_column = header_int(request.headers.get("Single-Column"), default=-1)
 
-    with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
+    with open(input_filename_csv, "r", encoding="utf-8", newline='\n') as original_csv:
       csv_reader = csv.reader(original_csv, delimiter=",")
       csv_data = []
       for row in csv_reader:
@@ -317,7 +318,7 @@ def parse():
             csv_data.append(row[single_column] + "\n")
           except IndexError:
             pass
-      with open(input_filename, "w", encoding="utf-8") as input_file:
+      with open(input_filename, "w", encoding="utf-8", newline='\n') as input_file:
         input_file.writelines(csv_data)
 
 
@@ -326,7 +327,7 @@ def parse():
   data, used_model = process_file(input_filename, model_name)
 
   original_strings = []
-  with open(input_filename, "r", encoding="utf-8") as f:
+  with open(input_filename, "r", encoding="utf-8", newline='\n') as f:
     lines = f.readlines()
     for line in lines:
       original_strings.append(line.strip("\n"))
@@ -407,18 +408,21 @@ Example:
   Return: [str(anystyle json array), str(path to model used)]
 """
 model_folder_path = pathlib.Path(model_folder)
+
 def process_file(filepath, model_name=False):
-  """ TODO this currently removes all data, oh no
-  f = open(filepath, "r")
+
+  f = open(filepath, "r", newline='\n')
   altered_lines = []
   for line in f.readlines():
     altered_line = line.replace("\"", "")
     altered_lines.append(altered_line)
-  f = open(filepath, "w")
+  f.close()
+  f = open(filepath, "w", newline='\n')
 
   for altered_line in altered_lines:
     f.write(altered_line)
-  """
+  f.close()
+
 
   # If no model is specified, grab the newest
   if not model_name:
