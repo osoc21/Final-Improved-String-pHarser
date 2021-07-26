@@ -15,3 +15,7 @@ fileInput.addEventListener("change", function() {
     // to do it at load time
     document.getElementById("fileSpan").innerText = fileInput.files[0].name;
 });
+
+function rotate(){
+    document.getElementById("crest").classList.add('rotate');
+}

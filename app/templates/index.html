@@ -15,13 +15,6 @@
 </div>
 <div id="texts">
 <h1 id="name" class="text_center">Final Improved String pHarser</h1>
-</div>
-</div>
-<script>
-function rotate(){
-    document.getElementById("crest").classList.add('rotate');
-}
-</script>
 <!-- Flask requires that you use encoding type multipart/form-data for file uploads! -->
 <div class="navigation">
   <nav>
@@ -32,6 +25,7 @@ function rotate(){
   </nav>
 </div>
 <div class="center">
+    <!-- Show success or error message if necessary -->
     {% if data %}
       {% if data.type == 'error' %}
          <p class="text_center error_message">{{data.response}}</p>
@@ -40,6 +34,7 @@ function rotate(){
          <p class="text_center success_message">{{data.response}}</p>
       {% endif %}
     {% endif %}
+    <!-- Upload file form -->
     <form method="POST" enctype="multipart/form-data" action="/parse">
       <div id="fileButtonDiv" class="file-button" >
         <!-- type=button is essential, otherwise it'll submit by default -->
@@ -56,11 +51,12 @@ function rotate(){
       <input type="submit" id="submit_file_button" class="center" onclick="rotate()" value="Submit file">
     </form>
     <br>
+    <!-- Upload citation string form -->
     <form method="POST" enctype="multipart/form-data">
         <label for="citation" class="center_label">Citation:</label><br>
         <textarea id="citation" class="center" rows="4" cols="50" name="citationstring" placeholder="Paste your citation string(s)"></textarea>
         <select class="center" name="model-name">
-          <option value="" disabled selected>Selectcitation</option>
+          <option value="" disabled selected>Select model</option>
             {% for model in models %}
               <option value={{model}} name={{model}}>{{model}}</option>
             {% endfor %}
