@@ -502,7 +502,7 @@ def train_model(model_path, data_path, overwrite, input_filenames=[]):
   # Try to update the model
   try:
     if not overwrite and model_exists:
-      return index_error(403, "Model already exists, and header 'overwrite' not set to True")
+      return index_error(409, "Model already exists, and header 'overwrite' not set to True")
     elif overwrite and model_exists:
       os.remove(model_path)
   
