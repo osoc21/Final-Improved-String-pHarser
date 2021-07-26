@@ -548,6 +548,7 @@ Headers:
 """
 @api.route('/train', methods=['POST'])
 @api.route('/train-xml', methods=['POST'])
+@api.route('/train/xml', methods=['POST'])
 def train():
   model_name = request.headers.get("model-name")
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
