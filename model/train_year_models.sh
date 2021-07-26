@@ -1,3 +1,10 @@
+# Train year models for each decade of citations
+# All citations prior to 1850 are taken together
+# Linux:
+#   chmod +x train_year_models.sh
+#   ./train_year_models.sh
+# Windows: bash train_and_check.sh
+
 export YEARS_MODEL_PATH="year_models"
 python3 train_and_accuracy.py ${1:-examples-2251.csv} 0.7 --end 1850 --out $YEARS_MODEL_PATH/0-1850.mod
 python3 train_and_accuracy.py ${1:-examples-2251.csv} 0.7 --start 1851 --end 1900 --out $YEARS_MODEL_PATH/1851-1900.mod

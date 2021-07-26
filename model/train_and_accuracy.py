@@ -138,6 +138,9 @@ mismatches = 0
 errors = 0
 csv_reader = csv.DictReader(test_file)
 
+# Count the total amount of mismatched citation parts and the total amount of missing citation parts.
+# A citation part is mismatched if the model makes a prediction for that citation part but it is incorrect
+# A citation part is missing if the prediction has no prediction for that part but it is expected from the test example
 totalParts = 0
 for line in csv_reader:
     if line_nb >= 1:
