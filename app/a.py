@@ -123,48 +123,6 @@ def save_data(request, filename, form_input_name=None):
   return filename
 
 
-"""
-Parse citation strings from plain text, with one citation per line. This is the most ideal method
-
-URL: domain.com/parse
-Method: POST
-Content-Type: text/plain
-
----
-
-Parse citation strings from a csv string into an array of JSON objects.
-
-URL: domain.com/parse
-Method: POST
-Headers:
-  Content-Type: text/csv
-  Ignore-Firstline: {boolean, optional, defaults to True}
-    (
-      Ignore the firstline. Set to true if first line is a header, for example,: String,Authors,Year...
-      Valid values: false, False, true, True, 1, 0
-    )
-  Single-Column: {int, optional, defaults to -1}
-    (
-      Only keep the data in the column with index int
-      Won't have effect if not set
-      Example situation: a csv file with Citationstring,Authors,Year,Title,Book --> use index 0
-    )
-
----
-
-Parse citation strings from a html-uploaded file into an array of JSON objects.
-This will automatically decide which filetype it is (csv, plain...)
-
-URL: domain.com/parse
-Method: POST
-Content-Type: multipart/form-data
-
-For the form:
-  <form enctype="multipart/form-data">
-    <input type="file" name="file">
-    ...
-
-"""
 CITATION_STRING_CONST = "citationstring"
 # Currently only support from form
 @api.route('/retrain', methods=['POST'])
@@ -228,97 +186,142 @@ def parse_pdf():
   }
   return render_template("response.html", data=return_data)
 
-@api.route('/parse', methods=['POST'])
-def parse():
-  # Step 1: figure out what kind of input is given
-  content_type = request.headers.get("content-type")
 
-  if "multipart/form-data" in content_type:
-    input_type = "form"
-  elif "text/plain" in content_type:
-    input_type = "txt"
-  elif "csv" in content_type:
-    input_type = "csv"
-  #elif "pdf" in content_type:
- #   input_type = "pdf"
+def get_model_from_request(request):
+  try:
+    model_name = request.form["model-name"] or request.headers.get("model-name")
+  except KeyError:
+    # If model_name not defined, set to empty to grab a random
+    model_name = ""
+  finally:
+    model_name = select_model(model_name)
+    return model_name
 
-  # If a form is used to send a file
+
+"""
+  Parse citation strings from a html-uploaded file into an array of JSON objects.
+  This will automatically decide which filetype it is (csv, plain...)
+
+  URL: domain.com/parse
+  Method: POST
+  Content-Type: multipart/form-data
+
+  For the form:
+    <form enctype="multipart/form-data">
+      <input type="file" name="file">
+      ...
+"""
+# parse/file is meant for use in forms. Thus it will simply redirect into the appropiate parse function  
+@api.route('/parse/file', methods=['POST'])
+def parse_file():
   if len(request.files) >= 1:
     old_filename = request.files['file'].filename.lower()
     # Check for allowed formats
     if old_filename.endswith("csv"):
-      input_type = "csv"
+      return parse_csv()
     elif old_filename.endswith("txt") or old_filename.endswith("ref"):
-      input_type = "txt"
- #   elif old_filename.endswith("pdf"):
-  #    input_type = "pdf"
+      return parse_str()
     else:
       # If a non-supported format gets uploaded, return 422
       return index_error(422, "The uploaded file format (" + old_filename[old_filename.rfind("."):] + ") isn't supported.")
-  # If input type couldn't be determined, assume plaintext
   else:
-    input_type = "txt"
-
-  # Step 2: put the input in a form that anystyle-cli can work with
-  """
-  https://github.com/inukshuk/anystyle-cli
-    The input argument can be a single text document containing one full
-    reference per line (blank lines will be ignored), or a folder containing
-    multiple documents. The (optional) output argument specifies
-    the folder where the results shall be saved; if no output folder is
-    specified, results will be saved in the folder containing the input.
-
-    ...
-
-    ref     One reference per line, suitable for parser input;
-    txt     Same as `ref';
-
-    ...
+      return index_error(422, "No data found in input")
 
 
-  From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input
-  """
+"""
+  parse_csv will convert a csv file into a citation string txt file
+  Parse citation strings from a csv string into an array of JSON objects.
+
+  URL: domain.com/parse/csv
+  Method: POST
+  Headers:
+    Ignore_Firstline: {boolean, optional, defaults to True}
+      (
+        Ignore the firstline. Set to true if first line is a header, for example,: String,Authors,Year...
+        Valid values: false, False, true, True, 1, 0
+      )
+    Single_Column: {int, optional, defaults to -1}
+      (
+        Only keep the data in the column with index int
+        Won't have effect if not set
+        Example situation: a csv file with Citationstring,Authors,Year,Title,Book --> use index 0
+      )
+"""
+@api.route('/parse-csv', methods=['POST'])
+@api.route('/parse/csv', methods=['POST'])
+def parse_csv():
+  input_filename = save_data_to_tmp(request, "csv")
+  input_filename_csv = input_filename
+  input_filename = input_filename_csv.replace("csv", "txt")
+
+  ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
+  single_column = header_int(request.headers.get("Single-Column"), default=-1)
+
+  with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
+    csv_reader = csv.reader(original_csv, delimiter=",")
+    csv_data = []
+    for row in csv_reader:
+      if ignore_firstline:
+        ignore_firstline = False  # Don't ignore after the first continue
+        continue  # Skip the csv_data append for the first line
+
+      if single_column <= -1:
+        csv_data.append(", ".join(row) + "\n")
+      else:
+        try:
+          csv_data.append(row[single_column] + "\n")
+        except IndexError:
+          pass
+    with open(input_filename, "w", encoding="utf-8") as input_file:
+      input_file.writelines(csv_data)
+
+  model = get_model_from_request(request)
+  parse_to_citations(input_filename, model, {input_filename, input_filename_csv})
   
-  input_filename = save_data_to_tmp(request, input_type, CITATION_STRING_CONST)
-  input_filenames = [input_filename]  # List of filenames to clean later
 
-  """ 
+"""
+  Parse citation strings from plain text, with one citation per line. This is the most ideal method
+
+  URL: domain.com/parse
+  Method: POST
+"""
+@api.route('/parse', methods=['POST'])
+@api.route('/parse/string', methods=['POST'])
+def parse_str():
+  input_filename = save_data_to_tmp(request, "txt")
+  model = get_model_from_request(request)
+  return parse_to_citations(input_filename, model)
+
+def parse_to_citations(filename, model, input_filenames={}):
+  """
+  parse_to_citations parses a file containing citations, one citation per line.
+  The input file should be converted into a ref or txt file before calling this function, see below
+  Pass a str(filename) and str(modelname). Modelname will be automatically recursively searched for, so you don't need to be super precise
+
+  From the documentation we can conclude that a .txt (or a .ref file) with one citation per line is suitable for input:
+    https://github.com/inukshuk/anystyle-cli
+      The input argument can be a single text document containing one full
+      reference per line (blank lines will be ignored), or a folder containing
+      multiple documents. The (optional) output argument specifies
+      the folder where the results shall be saved; if no output folder is
+      specified, results will be saved in the folder containing the input.
+
+      ...
+
+      ref     One reference per line, suitable for parser input;
+      txt     Same as `ref';
+
+      ...
+
+      
   Example of a line as provided in a .csv file by VLIZ:
   Krohling, W., & Zalmon, I. R. 2008. Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology 51: 213-221.
   """
-#  if input_type == "pdf":
- #   return parse_pdf()
 
-  if input_type == "csv":
-    input_filename_csv = input_filename
-    input_filename = input_filename_csv.replace("csv", "txt")
-    input_filenames.append(input_filename)
-
-    ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
-    single_column = header_int(request.headers.get("Single-Column"), default=-1)
-
-    with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
-      csv_reader = csv.reader(original_csv, delimiter=",")
-      csv_data = []
-      for row in csv_reader:
-        if ignore_firstline:
-          ignore_firstline = False  # Don't ignore after the first continue
-          continue  # Skip the csv_data append for the first line
-
-        if single_column <= -1:
-          csv_data.append(", ".join(row) + "\n")
-        else:
-          try:
-            csv_data.append(row[single_column] + "\n")
-          except IndexError:
-            pass
-      with open(input_filename, "w", encoding="utf-8") as input_file:
-        input_file.writelines(csv_data)
-
+  input_filenames.add(filename)  # Set of filenames to clean later
 
   # Step 3: run anystyle and return the result
-  model_name = request.form["model-name"] or request.headers.get("model-name")
-  data, used_model = process_file(input_filename, model_name)
+  data, used_model = process_file(filename, model)
 
   original_strings = []
   with open(input_filename, "r", encoding="utf-8") as f:
@@ -334,10 +337,6 @@ def parse():
     return index_success(200, "Successfully updated model. Thank you for your contribution")
   """
 
-  if len(data) <= 0:
-      return index_error(422, "No data found in input")
-
-  print("Returning data...")
   return_data = {
     "model": used_model,
     "data": data,
@@ -401,6 +400,7 @@ Example:
   Usage: process_file("citation.txt", "examples-300")
   Return: [str(anystyle json array), str(path to model used)]
 """
+pathlib.Stop
 model_folder_path = pathlib.Path(model_folder)
 def process_file(filepath, model_name=False):
   f = open(filepath, "r")
@@ -454,7 +454,7 @@ def select_model(model_name):
   print(model_name)
   model_name = model_name.rstrip(".mod")
   model_path = str(next(model_folder_path.rglob(model_name + ".mod")))
-
+  
   if os.path.isfile(model_path):
     return model_path
   else:
