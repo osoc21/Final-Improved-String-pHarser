@@ -413,11 +413,13 @@ def process_file(filepath, model_name=False):
   for line in f.readlines():
     altered_line = line.replace("\"", "")
     altered_lines.append(altered_line)
+  f.close()
+
   f = open(filepath, "w")
 
   for altered_line in altered_lines:
     f.write(altered_line)
-
+  f.close()
   # If no model is specified, grab the newest
   if not model_name:
     models = list(model_folder_path.rglob("*.mod"))
