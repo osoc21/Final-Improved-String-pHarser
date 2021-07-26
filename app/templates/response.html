@@ -69,6 +69,7 @@
             {%endfor%}
         </select>
       <br><br>
+      <input type="hidden" name="from-website" value="1">
     </form>
 
     <form action="/retrain" method="POST" enctype="multipart/form-data" id="citation-change-form">
@@ -94,6 +95,7 @@
             form.innerHTML= ""
             // Add a new text form that allows the user for feedback to the model
             form.innerHTML += '<input type="text" name="model" value="' + data["model"] +  '">';
+            form.innerHTML += '<input type="hidden" name="from-website" value="1">';
 
             const fields = ["Authors","Year","Title","Book","Series","Publisher",
                 "City","Volume","Issue","Pagination","DOI"];

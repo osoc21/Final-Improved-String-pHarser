@@ -83,11 +83,18 @@ def get_all_models():
 
 def index_error(err_code, message):
   data = {"response": message, "type": "error"}
-  return render_template('index.html', data=data, models=get_all_models()), err_code, {'Content-Type': 'text/html'}
+  if request.values.get('from-website', default=False):
+    return render_template('index.html', data=data, models=get_all_models()), err_code, {'Content-Type': 'text/html'}
+  else:
+    return data, err_code
 
 def index_success(success_code, success_msg):
   data = {"response": success_msg, "type": "success"}
-  return render_template('index.html', data=data, models=get_all_models()), success_code, {'Content-Type': 'text/html'}
+
+  if request.values.get('from-website', default=False):
+    return render_template('index.html', data=data, models=get_all_models()), success_code, {'Content-Type': 'text/html'}
+  else:
+    return data, success_code
 
 def remove_in_background(filenames):
   if type(filenames) == str:
