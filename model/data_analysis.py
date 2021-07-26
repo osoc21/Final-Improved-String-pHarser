@@ -3,6 +3,9 @@ import argparse
 from matplotlib import pyplot as plt
 import numpy as np
 
+# Script that created a histogram of the years that citation come from. This can be used for data analysis of a test
+# set
+# The examples must be labeled with a "Year" column
 # Usage: python3 data_analysis.py examples.csv
 parser = argparse.ArgumentParser(description='Train CSV file with Anystyle and get accuracy.')
 parser.add_argument('examples', metavar='examples.csv', type=str,
