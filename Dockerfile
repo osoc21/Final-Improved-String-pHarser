@@ -7,6 +7,7 @@ RUN gem install anystyle-cli
 COPY requirements.txt .
 COPY app/ /app
 COPY model/ app/model
+COPY grobid_client/ app/grobid_client
 
 RUN pip3 install -r requirements.txt
 

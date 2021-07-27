@@ -13,8 +13,6 @@ args = parser.parse_args()
 file_name = args.file_name
 file_path = args.file_path
 
-f = open("out.txt", "w")
-
 # put input pdf in a directory called filedir
 # make a directory
 
@@ -24,12 +22,8 @@ if not os.path.exists(file_path):
 GROBID_PATH = "/"
 os.chdir(GROBID_PATH)
 
-#os.chdir("grobid_client_python/temp/")
-file_path = "grobid_client_python/temp"
-shutil.copyfile(file_name, file_path + "/input.pdf")
-f.write("done moving file\n")
 # read all the pdf's inside the directory created and put the parsed string there
-client = GrobidClient(config_path="grobid_client_python/config.json")
+client = GrobidClient(config_path="app/grobid_client/config.json")
 # calls their service
 client.process("processReferences", file_path, output=file_path,
                consolidate_citations=True, teiCoordinates=True, force=True)

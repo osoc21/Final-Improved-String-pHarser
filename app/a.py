@@ -176,13 +176,10 @@ def process_pdf_file(file_path):
   path = ''.join(path)
   file_name = file_path.split("/")[len(file_path.split("/")) - 1]
   #subprocess.check_output('python3 ./hello.py', shell=True)
-  print('python3 grobid_client/example.py' + ' ' + path + ' ' +
+  print('python3 grobid_client/grobid_parsing.py' + ' ' + path + ' ' +
                                  file_name)
-  data = subprocess.check_output('python3 example.py' + ' ' + path + ' ' +
+  data = subprocess.check_output('python3 grobid_parsing.py' + ' ' + path + ' ' +
                                  file_name, shell=True)
-  print("data")
-
-  print(data)
   return data
 
 def parse_pdf():
@@ -191,7 +188,7 @@ def parse_pdf():
   input_filepath = GROBID_PATH + input_filename
   # a print statement
   file = request.files['file']
-  file.save(os.path.join(GROBID_PATH, input_filename))
+  file.save(input_filename)
   data = process_pdf_file(input_filepath)#, model_name)
   print("data: " + str(data))
   return_data = {
