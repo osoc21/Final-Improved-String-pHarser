@@ -38,7 +38,7 @@ def log_to_docker(msg):
 log_to_docker(os.listdir(GROBID_PATH))
 log_to_docker(os.getcwd())
 
-log_to_docker(pathlib.Path("/").rglob("*tei.xml"))
+log_to_docker(str(next(pathlib.Path("/").rglob("*tei.xml"))))
 # retrive file with parsed citation (and convert html to JSON)
 with open(GROBID_PATH + f"{pdf_file}.tei.xml", 'r', encoding="utf8") as file:
     obj = file.read()
