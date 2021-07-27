@@ -274,7 +274,7 @@ def parse_csv():
   print(ignore_firstline)
   print(single_column)
 
-  with open(input_filename_csv, "r", encoding="utf-8") as original_csv:
+  with open(input_filename_csv, "r", encoding="utf-8", newline='\n') as original_csv:
     csv_reader = csv.reader(original_csv, delimiter=",")
     csv_data = []
     for row in csv_reader:
@@ -289,7 +289,7 @@ def parse_csv():
           csv_data.append(row[single_column] + "\n")
         except IndexError:
           pass
-    with open(input_filename, "w", encoding="utf-8") as input_file:
+    with open(input_filename, "w", encoding="utf-8", newline='\n') as input_file:
       input_file.writelines(csv_data)
 
   model = get_model_from_request(request)
@@ -430,13 +430,13 @@ model_folder_path = pathlib.Path(model_folder)
 
 def process_file(filepath, model_name=False):
 
-  f = open(filepath, "r", newline='\n')
+  f = open(filepath, "r", encoding="utf-8", newline='\n')
   altered_lines = []
   for line in f.readlines():
     altered_line = line.replace("\"", "")
     altered_lines.append(altered_line)
   f.close()
-  f = open(filepath, "w", newline='\n')
+  f = open(filepath, "w",encoding="utf-8", newline='\n')
 
   for altered_line in altered_lines:
     f.write(altered_line)
