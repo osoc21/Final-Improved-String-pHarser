@@ -31,7 +31,7 @@ api.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 temporary_folder = "temp/"
 model_folder = "model/"
-GROBID_PATH = "grobid_client_python/"
+GROBID_PATH = "grobid_client/"
 
 """
 User Interface to manually upload a file, or (later on) manually correct output.
@@ -176,7 +176,9 @@ def process_pdf_file(file_path):
   path = ''.join(path)
   file_name = file_path.split("/")[len(file_path.split("/")) - 1]
   #subprocess.check_output('python3 ./hello.py', shell=True)
-  data = subprocess.check_output('python3 grobid_client_python/example.py' + ' ' + path + ' ' +
+  print('python3 grobid_client/example.py' + ' ' + path + ' ' +
+                                 file_name)
+  data = subprocess.check_output('python3 example.py' + ' ' + path + ' ' +
                                  file_name, shell=True)
   print("data")
 
@@ -186,9 +188,8 @@ def process_pdf_file(file_path):
 def parse_pdf():
   #model_name = request.headers.get("model-name")
   input_filename = request.files['file'].filename
-  input_filepath = GROBID_PATH + temporary_folder + input_filename
+  input_filepath = GROBID_PATH + input_filename
   # a print statement
-  print("filepath: "+ input_filepath)
   file = request.files['file']
   file.save(os.path.join(GROBID_PATH, input_filename))
   data = process_pdf_file(input_filepath)#, model_name)
