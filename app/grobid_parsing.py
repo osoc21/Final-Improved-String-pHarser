@@ -19,11 +19,11 @@ file_path = args.file_path
 if not os.path.exists(file_path):
     os.makedirs(file_path)
 # put input file in the directory
-GROBID_PATH = "/"
+GROBID_PATH = "/app/grobid_client/"
 os.chdir(GROBID_PATH)
 
 # read all the pdf's inside the directory created and put the parsed string there
-client = GrobidClient(config_path="app/grobid_client/config.json")
+client = GrobidClient(config_path="config.json")
 # calls their service
 client.process("processReferences", file_path, output=file_path,
                consolidate_citations=True, teiCoordinates=True, force=True)
