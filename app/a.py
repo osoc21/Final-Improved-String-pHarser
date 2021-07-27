@@ -30,7 +30,7 @@ SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
 api.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
 temporary_folder = "temp/"
-model_folder = "model/"
+model_folder = "model/data/models/available_models"
 GROBID_PATH = "grobid_client/"
 
 """
@@ -73,11 +73,14 @@ def get_contact_page():
     return render_template("contact.html")
 
 def get_all_models():
-  file_paths = list(model_folder_path.rglob("*.mod"))
-  res = []
-  for file_path in file_paths:
-    res.append(str(file_path).split("/")[len(str(file_path).split("/")) - 1])
-  return res
+  #file_paths = list(model_folder_path.rglob("*.mod"))
+  #print(os.listdir())
+  #print(file_paths)
+  #res = []
+  file_names = os.listdir(model_folder_path)
+ # for file_name in file_names:
+   # res.append(str(file_name).split("/")[len(str(file_name).split("/")) - 1])
+  return file_names
 
 
 
