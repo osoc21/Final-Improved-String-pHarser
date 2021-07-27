@@ -8,6 +8,8 @@ COPY requirements.txt .
 COPY app/ /app
 COPY model/ /app/model
 COPY grobid_client/ /app/grobid_client
+# In Docker, use a different JSON file (hostname then gets changed to Docker container name)
+COPY docker-config.json /app/grobid_client/config.json
 
 RUN pip3 install -r requirements.txt
 
