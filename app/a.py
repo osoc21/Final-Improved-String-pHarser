@@ -125,7 +125,7 @@ def save_data(request, filename, form_input_name=None):
   if len(request.files) <= 0:
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
-    data = request.form.get(form_input_name, request.get_data().decode("utf-8"))
+    data = request.form.get(form_input_name, request.form["citationstring"])
     print(data)
     file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
@@ -307,6 +307,7 @@ def parse_csv():
 @api.route('/parse/string', methods=['POST'])
 def parse_str():
   input_filename = save_data_to_tmp(request, "txt")
+  print("here is te request: " + str(request))
   model = get_model_from_request(request)
   return parse_to_citations(input_filename, model)
 
@@ -346,8 +347,9 @@ def parse_to_citations(filename, model, input_filenames=set()):
     lines = f.readlines()
     for line in lines:
       original_strings.append(line.strip("\n"))
+    f.close()
 
-  #remove_in_background(input_filenames)
+  remove_in_background(input_filenames)
 
   """
   if request.form and CITATION_STRING_CONST not in request.form:
@@ -453,7 +455,6 @@ def process_file(filepath, model_name=False):
   model = select_model(model_name)
   print('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"')
   data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', stderr=subprocess.STDOUT, shell=True)
-  print(data)
   data = json.loads(data)
 
   # Remove type field
