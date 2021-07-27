@@ -185,9 +185,14 @@ def process_pdf_file(file_path):
 
 def parse_pdf():
   #model_name = request.headers.get("model-name")
-  input_filename = GROBID_PATH + temporary_folder + request.files['file'].filename
-  data = process_pdf_file(input_filename)#, model_name)
-  print(input_filename)
+  input_filename = request.files['file'].filename
+  input_filepath = GROBID_PATH + temporary_folder + input_filename
+  # a print statement
+  print("filepath: "+ input_filepath)
+  file = request.files['file']
+  file.save(os.path.join(GROBID_PATH, input_filename))
+  data = process_pdf_file(input_filepath)#, model_name)
+  print("data: " + str(data))
   return_data = {
     "data": data,
     "original_strings": ""
@@ -511,7 +516,9 @@ Example:
   return: str(anystyle-cli stdout)
 
 """
-def train_model(model_path, data_path, overwrite, input_filenames=[]):
+def train_model(model_path, data_path, overwrite, input_filenames=None):
+  if input_filenames is None:
+    input_filenames = []
   model_exists = os.path.exists(model_path)
 
   if model_exists:
