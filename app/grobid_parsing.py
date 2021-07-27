@@ -5,6 +5,7 @@ import xmltodict
 import json
 import argparse
 import sys
+import pathlib
 
 parser = argparse.ArgumentParser(description='Process PDF file.')
 parser.add_argument('file_path', type=str, help='PDF file path')
