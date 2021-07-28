@@ -7,7 +7,11 @@ These features are based on already available open source projects and integrate
 The first two features are mainly build with the code of [Anystyle.io](https://anystyle.io/), which provides one of the best services for this purpose.
 Instead of using their default model however, the model behind FISH is trained on data provided by the flemish marine institute, consisting of around 2000 example
 references with no fixed format, going back to the mid 18th century.   
-There are currently 3 models available, these models are trained on differenct datasets, which can be found under model/data/csv/ and have the same name as the model.  
+There are currently 3 models available, these models are trained on differenct datasets, which can be found under model/data/csv/.
+The aphia full model is trained on more fields, while the dataset of the normal aphia model and all examples only provide limited labels in which a new reference can be parsed.
+For the estimated accuracy of the models one can run the Train_and_accuracy.py file under model, this file accepts a csv file with a full string and the parsed solution (see data under model for example input files),
+it trains a model on a fraction of the input file and tests the model on the remaining entries, as a result it displays the error rate: the rate where the output of the model differs from the correct answer in the input file.
+For more information, see the anystyle documentation: https://github.com/inukshuk/anystyle     
 For the last service, reading references from pdf, [Grobid](https://grobid.readthedocs.io/en/latest/) is used. 
 Although they do not allow manual training, their service is high quality and well documented.
 
@@ -75,7 +79,9 @@ sudo docker exec -it <container name> /bin/bash
 ```
 
 ## Credits
-...
+the credits of this code go to:
+Felix Cammearts, Stijn 'Cat' Catry and Maarten Wens   
+coached by: Chris Leroy and Liesbeth Lyssens
 
 ## License
-...
+the licence can be found in LICENSE.txt
