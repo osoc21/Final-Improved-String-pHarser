@@ -73,13 +73,16 @@ def get_contact_page():
     return render_template("contact.html")
 
 def get_all_models():
-  #file_paths = list(model_folder_path.rglob("*.mod"))
+  file_paths = list(model_folder_path.rglob("*.mod"))
   #log(os.listdir())
   #log(file_paths)
   #res = []
-  file_names = os.listdir(model_folder_path)
- # for file_name in file_names:
+  #file_names = os.listdir(model_folder_path)
+  #for file_name in file_names:
    # res.append(str(file_name).split("/")[len(str(file_name).split("/")) - 1])
+  file_names = []
+  for path in file_paths:
+    file_names.append(os.path.basename(path))
   return file_names
 
 def log(txt):
@@ -93,7 +96,8 @@ def get_log():
   with open("log.txt", "r") as logfile:
     txt = logfile.readlines()
 
-  textarea = f"<textarea style='width: 90vw; height: 90vh;'>"
+  textarea = f"Logfile content, from new (top) to old (bottom): <textarea style='width: 90vw; height: 90vh;'>"
+  txt.reverse()
   for line in txt:
     textarea += line + "\n"
   textarea += "</textarea>"
