@@ -192,15 +192,9 @@ def process_pdf_file(file_path):
   path = ''.join(path) + "/"
   file_name = file_path.split("/")[len(file_path.split("/")) - 1]
   #subprocess.check_output('python3 ./hello.py', shell=True)
-<<<<<<< HEAD
-  print('python3 example.py' + ' ' + path + ' ' +
-                                 file_name)
-  data = subprocess.check_output('python3 example.py' + ' ' + path + '/ ' +
-=======
   log('python3 grobid_client/grobid_parsing.py' + ' ' + path + ' ' +
                                  file_name)
   data = subprocess.check_output('python3 grobid_parsing.py' + ' ' + path + ' ' +
->>>>>>> c3f8e11c89e87a83326427f47f0dc73fb866a547
                                  file_name, shell=True)
   return data
 
