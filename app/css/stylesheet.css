@@ -1,0 +1,198 @@
+body {
+    font-family: "Amatic SC", sans-serif;
+}
+
+@keyframes rotatecrest {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.rotate
+{
+    transform: rotate(360deg);
+    animation-name: rotatecrest;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.center_label {
+    display: block;
+    text-align: center;
+    font-family:Amatic SC;
+    color:white;
+    font-size:25px;
+}
+
+.text_center {
+    text-align: center;
+}
+
+.text_left {
+    text-align: left;
+}
+.error_message {
+    color: red;
+    background: rgba(0,0,0,.5);
+    border-radius: 5px;
+}
+
+.success_message {
+    color: green;
+    background: rgba(0,0,0,.5);
+    border-radius: 5px;
+}
+
+body {
+  background-image: url("https://raw.githubusercontent.com/osoc21/Final-Improved-String-pHarser/master/app/assets/background.jpg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+h1 {
+    font-family:Amatic SC;
+    color:white;
+    font-size:60px;
+}
+
+p {
+    font-family:Amatic SC;
+    color:white;
+    font-size:30px;
+}
+
+a, nav {
+    color:white;
+}
+
+.upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.btn {
+  border: 2px solid gray;
+  color: gray;
+  background-color: white;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: bold;
+}
+.center_button {
+  margin: 0;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+.upload-btn-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  opacity: 0;
+
+}
+
+.file-button, .file-button * {
+    margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.file-button button {
+    padding: 20px 45px;
+    background-color: aquamarine;
+    border: 0.5px solid aqua;
+    box-shadow: 0px 2px 15px black;
+    font-weight: bold;
+    border-radius: 7px;
+    cursor: pointer;
+    display: block;
+}
+
+.file-button span {
+    color: white;
+    font-size: large;
+}
+
+.file-button input{
+    display: none;
+}
+
+.navigation{
+    position:absolute;
+    top:0;
+    right:0;
+    font-size: 30px;
+
+}
+
+textarea {
+	display: block;
+    background: #e6e6e6;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #666;
+    min-height: 150px;
+    border-radius: 25px;
+    padding: 12px 30px;
+}
+
+input[type=text], select {
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=submit], button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 32px 144px;
+  margin-left: auto;
+  margin-right: auto;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
+}
+
+#fileButtonDiv {
+    width: 200px;
+}
+
+.json-div {
+    background-color: white;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: scroll;
+    width: 50vw;
+    height: 80vh;
+}
+
+#citations-select {
+  width: 50vw;
+}
+
+#json-div {
+  padding: 15px;
+}
