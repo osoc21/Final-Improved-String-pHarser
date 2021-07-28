@@ -87,7 +87,7 @@ def get_all_models():
 
 def log(txt):
   with open("log.txt", "a+") as logfile:
-    logfile.write(txt)
+    logfile.write(str(txt))
     logfile.write("\n")
 
 @api.route('/getlog', methods=['GET'])
@@ -478,6 +478,7 @@ def process_file(filepath, model_name=False):
   model = select_model(model_name)
   log('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"')
   data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', stderr=subprocess.STDOUT, shell=True)
+  log(data)
   data = json.loads(data)
 
   # Remove type field
