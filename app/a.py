@@ -33,19 +33,6 @@ temporary_folder = "temp/"
 model_folder = "model/data/models/available_models"
 GROBID_PATH = "grobid_client/"
 
-"""
-User Interface to manually upload a file, or (later on) manually correct output.
-
-URL: domain.com
-METHOD: GET
-
----
-
-An alias for /parse
-URL: domain.com
-METHOD: POST
-
-"""
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
     models = list(model_folder_path.rglob("*.mod"))
@@ -57,29 +44,15 @@ def get_homepage():
     elif request.method == "POST":
         return parse()
 
+"""
+get_all_models: get every .mod file in model_folder_path, and remove the dirname
 
-@api.route('/about/', methods=['GET'])
-def get_about_page():
-    return render_template("about.html")
-
-
-@api.route('/tos/', methods=['GET'])
-def get_tos_page():
-    return render_template("termsofuse.html")
-
-
-@api.route('/contact/', methods=['GET'])
-def get_contact_page():
-    return render_template("contact.html")
-
+Example:
+  Usage: models = get_all_models()
+  Return: [str("aphia.mod"), str("all_examples.mod"))]
+"""
 def get_all_models():
   file_paths = list(model_folder_path.rglob("*.mod"))
-  #log(os.listdir())
-  #log(file_paths)
-  #res = []
-  #file_names = os.listdir(model_folder_path)
-  #for file_name in file_names:
-   # res.append(str(file_name).split("/")[len(str(file_name).split("/")) - 1])
   file_names = []
   for path in file_paths:
     file_names.append(os.path.basename(path))
