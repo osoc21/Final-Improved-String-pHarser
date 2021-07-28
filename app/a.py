@@ -456,7 +456,7 @@ def process_file(filepath, model_name=False):
   f = open(filepath, "r", encoding="utf-8", newline='\n')
   altered_lines = []
   for line in f.readlines():
-    altered_line = line.replace("\"", "")
+    altered_line = line.replace("\"", "").replace("\r", "")
     altered_lines.append(altered_line)
   f.close()
   f = open(filepath, "w",encoding="utf-8", newline='\n')
