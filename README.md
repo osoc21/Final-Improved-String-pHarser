@@ -80,7 +80,7 @@ sudo docker exec -it <container name> /bin/bash
 
 ## Credits
 the credits of this code go to:
-Felix Cammearts, Stijn 'Cat' Catry and Maarten Wens
+Felix Cammearts, Stijn 'Cat' Catry and Maarten Wens   
 coached by: Chris Leroy and Liesbeth Lyssens
 
 ## License
