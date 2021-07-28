@@ -55,7 +55,7 @@ body {
 }
 
 body {
-  background-image: url("../assets/background.jpg");
+  background-image: url("https://raw.githubusercontent.com/osoc21/Final-Improved-String-pHarser/master/app/assets/background.jpg");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
