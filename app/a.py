@@ -492,7 +492,7 @@ def process_file(filepath, model_name=False):
   ]
 
 def no_path_no_ext(value):
-  return os.path.splitext(os.path.basename(value))[0]
+  return os.path.splitext(os.path.basename(str(value)))[0]
 
 
 """
