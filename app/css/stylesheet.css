@@ -129,7 +129,7 @@ a, nav {
 }
 
 .file-button input{
-    display: none; /* no-js clients might be a problem */
+    display: none;
 }
 
 .navigation{
