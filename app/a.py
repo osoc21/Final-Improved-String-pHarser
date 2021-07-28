@@ -160,7 +160,7 @@ CITATION_STRING_CONST = "citationstring"
 # Currently only support from form
 @api.route('/retrain', methods=['POST'])
 def retrain():
-  model_name = request.form["model"]
+  model_name = request.values.get("model-name") or request.headers.get("model-name")
 
   log("Retraining " + model_name)
 
@@ -171,14 +171,14 @@ def retrain():
   dataset = model_data.getroot()
   sequence = ET.SubElement(dataset, "sequence")
 
-  keys = request.form.keys()
+  keys = request.values.keys()
   for key in keys:
     log(key)
     # Don't add model-name to XML
     if key == "model-name":
       continue
 
-    value = request.form[key]
+    value = request.values.get(key)
     log("  " + value)
 
     
@@ -220,7 +220,7 @@ def parse_pdf():
 
 def get_model_from_request(request):
   try:
-    model_name = request.form["model-name"] or request.headers.get("model-name")
+    model_name = request.values.get("model-name") or request.headers.get("model-name")
   except KeyError:
     # If model_name not defined, set to empty to grab a random
     model_name = ""
@@ -552,7 +552,7 @@ def train_model(model_path, data_path, overwrite, input_filenames=None):
       os.remove(model_path)
   
     command = f'anystyle train "{data_path}" "{model_path}"'
-    output = subprocess.check_output(command, shell=True)
+    output = str(subprocess.check_output(command, shell=True))
 
     remove_in_background(input_filenames)
 
