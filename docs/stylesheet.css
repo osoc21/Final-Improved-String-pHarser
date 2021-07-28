@@ -196,3 +196,7 @@ input[type=submit]:hover {
 #json-div {
   padding: 15px;
 }
+
+img {
+  border-radius: 50%;
+}
