@@ -7,7 +7,8 @@ These features are based on already available open source projects and integrate
 The first two features are mainly build with the code of [Anystyle.io](https://anystyle.io/), which provides one of the best services for this purpose.
 Instead of using their default model however, the model behind FISH is trained on data provided by the flemish marine institute, consisting of around 2000 example
 references with no fixed format, going back to the mid 18th century.   
-For the last service, reading references from pdf, [Grobid](https://grobid.readthedocs.io/en/latest/) is used.
+There are currently 3 models available, these models are trained on differenct datasets, which can be found under model/data/csv/ and have the same name as the model.  
+For the last service, reading references from pdf, [Grobid](https://grobid.readthedocs.io/en/latest/) is used. 
 Although they do not allow manual training, their service is high quality and well documented.
 
 ## Installation

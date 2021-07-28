@@ -176,9 +176,9 @@ def process_pdf_file(file_path):
   path = ''.join(path)
   file_name = file_path.split("/")[len(file_path.split("/")) - 1]
   #subprocess.check_output('python3 ./hello.py', shell=True)
-  print('python3 grobid_client/example.py' + ' ' + path + ' ' +
+  print('python3 example.py' + ' ' + path + ' ' +
                                  file_name)
-  data = subprocess.check_output('python3 example.py' + ' ' + path + ' ' +
+  data = subprocess.check_output('python3 example.py' + ' ' + path + '/ ' +
                                  file_name, shell=True)
   print("data")
 

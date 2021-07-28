@@ -1,8 +1,6 @@
 import os
 from grobid_client.grobid_client.grobid_client import GrobidClient
 import shutil
-import xmltodict
-import json
 import argparse
 
 parser = argparse.ArgumentParser(description='Process PDF file.')
@@ -13,29 +11,21 @@ args = parser.parse_args()
 file_name = args.file_name
 file_path = args.file_path
 
-f = open("out.txt", "w")
-
 # put input pdf in a directory called filedir
 # make a directory
 
 if not os.path.exists(file_path):
     os.makedirs(file_path)
-# put input file in the directory
-GROBID_PATH = "/"
-os.chdir(GROBID_PATH)
 
 #os.chdir("grobid_client_python/temp/")
-file_path = "grobid_client_python/temp"
-shutil.copyfile(file_name, file_path + "/input.pdf")
-f.write("done moving file\n")
 # read all the pdf's inside the directory created and put the parsed string there
-client = GrobidClient(config_path="grobid_client_python/config.json")
+client = GrobidClient(config_path="C:\stage\Final-Improved-String-pHarser\grobid_client\config.json")
 # calls their service
 client.process("processReferences", file_path, output=file_path,
                consolidate_citations=True, teiCoordinates=True, force=True)
 
 # retrive file with parsed citation (and convert html to JSON)
-with open(file_path + "/input.tei.xml", 'r', encoding="utf8") as file:
+with open(file_path + file_name.split(".")[0] + ".tei.xml", 'r', encoding="utf8") as file:
     obj = file.read()
     #json_data = json.dumps(xmltodict.parse(obj))
 # clear directory
