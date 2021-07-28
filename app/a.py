@@ -297,7 +297,7 @@ def parse_csv():
   log(ignore_firstline)
   log(single_column)
 
-  with open(input_filename_csv, "r", encoding="utf-8", newline='\n') as original_csv:
+  with open(input_filename_csv, "r", encoding="utf-8", newline='') as original_csv:
     csv_reader = csv.reader(original_csv, delimiter=",")
     csv_data = []
     for row in csv_reader:

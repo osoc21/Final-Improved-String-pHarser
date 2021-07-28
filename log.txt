@@ -1,0 +1,74 @@
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/46520210728095524.txt"
+Removed
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/57520210728095547.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\all_examples.mod" -f json --stdout parse "temp/57820210728095619.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/57520210728095654.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/file' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/189920210728095710.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/196820210728095754.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/44920210728095818.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/67520210728095834.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/57920210728095841.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/57920210728100147.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/45120210728100202.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\all_examples.mod" -f json --stdout parse "temp/45420210728100211.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/34120210728101805.txt"
+Removed
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/46720210728101851.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/46720210728102452.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/46720210728102556.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/46720210728102645.txt"
+Error while removing
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/32920210728102721.txt"
+Removed
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/32920210728104224.txt"
+b'[\r\n  {\r\n    "Authors": [\r\n      "Brockes, J.,"\r\n    ],\r\n    "Year": [\r\n      "1994."\r\n    ],\r\n    "Title": [\r\n      "Muscle escapes from a jelly mould."\r\n    ],\r\n    "Book": [\r\n      "Curr. Biol."\r\n    ],\r\n    "Suffix": [\r\n      "4 11: 1030-1032."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Removed
+request: <Request 'http://127.0.0.1:5000/parse/file' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/189920210728104235.txt"
+b'[\r\n  {\r\n    "Authors": [\r\n      "Golev, B.T.R."\r\n    ],\r\n    "Year": [\r\n      "1990."\r\n    ],\r\n    "Title": [\r\n      "Late Palaeocene Nummulites of Uzbekistan."\r\n    ],\r\n    "Book": [\r\n      "Paleontologicheskiy Sbornik"\r\n    ],\r\n    "Suffix": [\r\n      "27;."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Krohling, W., & Zalmon, I. R."\r\n    ],\r\n    "Year": [\r\n      "2008."\r\n    ],\r\n    "Title": [\r\n      "Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the"\r\n    ],\r\n    "Book": [\r\n      "Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology"\r\n    ],\r\n    "Suffix": [\r\n      "51: 213-221."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Book": [\r\n      "Report of the First Scientific Expedition to Manchoukou"\r\n    ],\r\n    "Suffix": [\r\n      "4(2):"\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Brockes, J.,"\r\n    ],\r\n    "Year": [\r\n      "1994."\r\n    ],\r\n    "Title": [\r\n      "Muscle escapes from a jelly mould."\r\n    ],\r\n    "Book": [\r\n      "Curr. Biol."\r\n    ],\r\n    "Suffix": [\r\n      "4 11: 1030-1032."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Anderson, P.A.V.,"\r\n    ],\r\n    "Year": [\r\n      "1980."\r\n    ],\r\n    "Title": [\r\n      "Epithelial conduction: its properties and function."\r\n    ],\r\n    "Book": [\r\n      "Prog. Neurobiol."\r\n    ],\r\n    "Suffix": [\r\n      "15 : 163-203."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Stagni, A.,"\r\n    ],\r\n    "Year": [\r\n      "1961."\r\n    ],\r\n    "Title": [\r\n      "Alcuni dati sui poteri induttivi nell\'adulto e nella gemma di Hydra vulgaris attenuata."\r\n    ],\r\n    "Book": [\r\n      "Annali Univ. Ferrara, Sez."\r\n    ],\r\n    "Suffix": [\r\n      "XIII, n. ser. 1 8: 86-89."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Book": [\r\n      "Verh. Deutsch. Wiss. Ver. Santiago (Chile), n. f. 3"\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Gittenberger, A. & Hoeksema, B.W."\r\n    ],\r\n    "Year": [\r\n      "2006."\r\n    ],\r\n    "Title": [\r\n      "Phenotypic plasticity revealed by molecular studies on reef corals of Fungia (Cycloseris) spp. (Scleractinia: Fungiidae) near river outlets."\r\n    ],\r\n    "Book": [\r\n      "Contributions to Zoology"\r\n    ],\r\n    "Suffix": [\r\n      "75: 195-201"\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Title": [\r\n      "Everson I. (2001)."\r\n    ],\r\n    "Book": [\r\n      "Antarctic fishes. The Encyclopedia of Ocean Sciences. Academic"\r\n    ],\r\n    "Suffix": [\r\n      "Press, pp. 159-162."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Al Khudary, R., and Antranikian, G."\r\n    ],\r\n    "Year": [\r\n      "2006."\r\n    ],\r\n    "Title": [\r\n      "Pseudoalteromonas arctica sp. nov., a novel marine, aerobic, psychrotolerant strain isolated from Spitsbergen."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Soldano & F. Conti"\r\n    ],\r\n    "Book": [\r\n      "in Conti & al., Annot. Checklist Ital. Vasc. Fl."\r\n    ],\r\n    "Suffix": [\r\n      "2005."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "McLaughlin, P.A. & P.C. Dworschak."\r\n    ],\r\n    "Year": [\r\n      "2001."\r\n    ],\r\n    "Title": [\r\n      "Reappraisal of hermit crab species (Decapoda: Anomura: Paguridea) reported by Camill Heller in 1861, 1862 and 1865."\r\n    ],\r\n    "Book": [\r\n      "Annalen des Naturhistorische Museums in Wien."\r\n    ],\r\n    "Suffix": [\r\n      "103B: 135-176."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Phytoneuron"\r\n    ],\r\n    "Suffix": [\r\n      "2017-61: 20. [6 Sep 2017] [epublished]"\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Error while removing
+[WinError 2] The system cannot find the file specified: 'temp/32920210728104224.txt'
+None
+None
+False
+-1
+None
+None
+False
+-1
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/87820210728104650.txt"
+b'[\r\n  {\r\n    "Authors": [\r\n      "Golev, B.T.R."\r\n    ],\r\n    "Year": [\r\n      "1990."\r\n    ],\r\n    "Title": [\r\n      "Late Palaeocene Nummulites of Uzbekistan."\r\n    ],\r\n    "Book": [\r\n      "Paleontologicheskiy Sbornik"\r\n    ],\r\n    "Suffix": [\r\n      "27;."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Krohling, W., & Zalmon, I. R."\r\n    ],\r\n    "Year": [\r\n      "2008."\r\n    ],\r\n    "Title": [\r\n      "Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the"\r\n    ],\r\n    "Book": [\r\n      "Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology"\r\n    ],\r\n    "Suffix": [\r\n      "51: 213-221."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Book": [\r\n      "Report of the First Scientific Expedition to Manchoukou"\r\n    ],\r\n    "Suffix": [\r\n      "4(2):"\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Brockes, J.,"\r\n    ],\r\n    "Year": [\r\n      "1994."\r\n    ],\r\n    "Title": [\r\n      "Muscle escapes from a jelly mould."\r\n    ],\r\n    "Book": [\r\n      "Curr. Biol."\r\n    ],\r\n    "Suffix": [\r\n      "4 11: 1030-1032."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Anderson, P.A.V.,"\r\n    ],\r\n    "Year": [\r\n      "1980."\r\n    ],\r\n    "Title": [\r\n      "Epithelial conduction: its properties and function."\r\n    ],\r\n    "Book": [\r\n      "Prog. Neurobiol."\r\n    ],\r\n    "Suffix": [\r\n      "15 : 163-203."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Removed
