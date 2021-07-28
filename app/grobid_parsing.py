@@ -2,6 +2,8 @@ import os
 from grobid_client.grobid_client.grobid_client import GrobidClient
 import shutil
 import argparse
+import sys
+import pathlib
 
 parser = argparse.ArgumentParser(description='Process PDF file.')
 parser.add_argument('file_path', type=str, help='PDF file path')
@@ -16,16 +18,38 @@ file_path = args.file_path
 
 if not os.path.exists(file_path):
     os.makedirs(file_path)
+<<<<<<< HEAD:example.py
 
 #os.chdir("grobid_client_python/temp/")
 # read all the pdf's inside the directory created and put the parsed string there
 client = GrobidClient(config_path="C:\stage\Final-Improved-String-pHarser\grobid_client\config.json")
+=======
+# put input file in the directory
+GROBID_PATH = "/app/grobid_client/"
+os.chdir(GROBID_PATH)
+
+# read all the pdf's inside the directory created and put the parsed string there
+client = GrobidClient(config_path="config.json")
+>>>>>>> c3f8e11c89e87a83326427f47f0dc73fb866a547:app/grobid_parsing.py
 # calls their service
-client.process("processReferences", file_path, output=file_path,
+client.process("processReferences", GROBID_PATH, output=GROBID_PATH,
                consolidate_citations=True, teiCoordinates=True, force=True)
 
+pdf_file = os.path.basename(file_name).rstrip(".pdf")
+
+def log_to_docker(msg):
+    print(msg, file=sys.stderr)
+
+log_to_docker(os.listdir(GROBID_PATH))
+log_to_docker(os.getcwd())
+
+log_to_docker(str(next(pathlib.Path("/").rglob("*tei.xml"))))
 # retrive file with parsed citation (and convert html to JSON)
+<<<<<<< HEAD:example.py
 with open(file_path + file_name.split(".")[0] + ".tei.xml", 'r', encoding="utf8") as file:
+=======
+with open(GROBID_PATH + f"{pdf_file}.tei.xml", 'r', encoding="utf8") as file:
+>>>>>>> c3f8e11c89e87a83326427f47f0dc73fb866a547:app/grobid_parsing.py
     obj = file.read()
     #json_data = json.dumps(xmltodict.parse(obj))
 # clear directory

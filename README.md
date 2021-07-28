@@ -23,6 +23,7 @@ $ sudo docker build -t fish .
 
 ### Manual
 - `git clone https://github.com/osoc21/Final-Improved-String-pHarser.git`
+- Run `git submodule update --init --recursive`
 - Install Python3 and Ruby
 - Install dependencies
     - `gem install anystyle-cli`
@@ -66,6 +67,12 @@ Docker with mounting:
 docker run -p 5000:5000 --mount type=bind,src="$(pwd)/app",target=/app --mount type=bind,src="$(pwd)/model",target=/app/model --mount type=bind,src="$(pwd)/temp",target=/app/temp fish 
 ```
 
+### Hook into existing Docker(-Compose) container
+
+```bash
+sudo docker ps
+sudo docker exec -it <container name> /bin/bash 
+```
 
 ## Credits
 ...
