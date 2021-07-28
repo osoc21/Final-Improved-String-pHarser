@@ -79,9 +79,9 @@ sudo docker exec -it <container name> /bin/bash
 ```
 
 ## Credits
-the credits of this code go to:
-Felix Cammearts, Stijn 'Cat' Catry and Maarten Wens   
-coached by: Chris Leroy and Liesbeth Lyssens
+The credits of this code go to:
+Felix Cammaerts, Stijn 'Cat' Catry and Maarten Wens   
+Coached by: Chris Leroy and Liesbeth Lyssens
 
 ## License
-the licence can be found in LICENSE.txt
+The licence can be found in [LICENSE.txt](https://github.com/osoc21/Final-Improved-String-pHarser/blob/master/LICENSE.txt).
