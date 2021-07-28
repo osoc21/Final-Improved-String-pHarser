@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  api:
+    container_name: fish_api
+    build: .  # Use the local Dockerfile
+    depends_on:
+      - grobid
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./app/:/app
+      - ./model/:/app/model
+      - ./grobid_client/:/app/grobid_client
+  grobid:
+    container_name: fish_grobid
+    image: lfoppiano/grobid:0.7.0
+    ports:
+      - 8070:8070
+      - 8071:8071
+

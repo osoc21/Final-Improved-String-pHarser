@@ -176,7 +176,7 @@ def retrain():
 
 def process_pdf_file(file_path):
   path = os.path.dirname(file_path)
-  path = ''.join(path)
+  path = ''.join(path) + "/"
   file_name = file_path.split("/")[len(file_path.split("/")) - 1]
   #subprocess.check_output('python3 ./hello.py', shell=True)
   print('python3 grobid_client/grobid_parsing.py' + ' ' + path + ' ' +

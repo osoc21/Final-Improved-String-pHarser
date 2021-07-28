@@ -4,6 +4,8 @@ import shutil
 import xmltodict
 import json
 import argparse
+import sys
+import pathlib
 
 parser = argparse.ArgumentParser(description='Process PDF file.')
 parser.add_argument('file_path', type=str, help='PDF file path')
@@ -25,11 +27,20 @@ os.chdir(GROBID_PATH)
 # read all the pdf's inside the directory created and put the parsed string there
 client = GrobidClient(config_path="config.json")
 # calls their service
-client.process("processReferences", file_path, output=file_path,
+client.process("processReferences", GROBID_PATH, output=GROBID_PATH,
                consolidate_citations=True, teiCoordinates=True, force=True)
 
+pdf_file = os.path.basename(file_name).rstrip(".pdf")
+
+def log_to_docker(msg):
+    print(msg, file=sys.stderr)
+
+log_to_docker(os.listdir(GROBID_PATH))
+log_to_docker(os.getcwd())
+
+log_to_docker(str(next(pathlib.Path("/").rglob("*tei.xml"))))
 # retrive file with parsed citation (and convert html to JSON)
-with open(file_path + "/input.tei.xml", 'r', encoding="utf8") as file:
+with open(GROBID_PATH + f"{pdf_file}.tei.xml", 'r', encoding="utf8") as file:
     obj = file.read()
     #json_data = json.dumps(xmltodict.parse(obj))
 # clear directory
