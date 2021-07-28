@@ -2,4 +2,4 @@
 __pycache__
 tmp/
 temp/
-app/log.txt
+*log.txt
