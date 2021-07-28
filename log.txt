@@ -72,3 +72,34 @@ False
 anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/87820210728104650.txt"
 b'[\r\n  {\r\n    "Authors": [\r\n      "Golev, B.T.R."\r\n    ],\r\n    "Year": [\r\n      "1990."\r\n    ],\r\n    "Title": [\r\n      "Late Palaeocene Nummulites of Uzbekistan."\r\n    ],\r\n    "Book": [\r\n      "Paleontologicheskiy Sbornik"\r\n    ],\r\n    "Suffix": [\r\n      "27;."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Krohling, W., & Zalmon, I. R."\r\n    ],\r\n    "Year": [\r\n      "2008."\r\n    ],\r\n    "Title": [\r\n      "Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the"\r\n    ],\r\n    "Book": [\r\n      "Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology"\r\n    ],\r\n    "Suffix": [\r\n      "51: 213-221."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Book": [\r\n      "Report of the First Scientific Expedition to Manchoukou"\r\n    ],\r\n    "Suffix": [\r\n      "4(2):"\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Brockes, J.,"\r\n    ],\r\n    "Year": [\r\n      "1994."\r\n    ],\r\n    "Title": [\r\n      "Muscle escapes from a jelly mould."\r\n    ],\r\n    "Book": [\r\n      "Curr. Biol."\r\n    ],\r\n    "Suffix": [\r\n      "4 11: 1030-1032."\r\n    ],\r\n    "type": null\r\n  },\r\n  {\r\n    "Authors": [\r\n      "Anderson, P.A.V.,"\r\n    ],\r\n    "Year": [\r\n      "1980."\r\n    ],\r\n    "Title": [\r\n      "Epithelial conduction: its properties and function."\r\n    ],\r\n    "Book": [\r\n      "Prog. Neurobiol."\r\n    ],\r\n    "Suffix": [\r\n      "15 : 163-203."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
 Removed
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/32920210728104803.txt"
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/32920210728104804.txt"
+b'[\r\n  {\r\n    "Authors": [\r\n      "Brockes, J.,"\r\n    ],\r\n    "Year": [\r\n      "1994."\r\n    ],\r\n    "Title": [\r\n      "Muscle escapes from a jelly mould."\r\n    ],\r\n    "Book": [\r\n      "Curr. Biol."\r\n    ],\r\n    "Suffix": [\r\n      "4 11: 1030-1032."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Removed
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\all_examples.mod" -f json --stdout parse "temp/44220210728104815.txt"
+b'[\r\n  {\r\n    "Authors": [\r\n      "Brockes, J.,"\r\n    ],\r\n    "Year": [\r\n      "1994."\r\n    ],\r\n    "Title": [\r\n      "Muscle escapes from a jelly mould."\r\n    ],\r\n    "Series": [\r\n      "Curr. Biol. 4"\r\n    ],\r\n    "Suffix": [\r\n      "11: 1030-1032."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Error while removing
+[WinError 2] The system cannot find the file specified: 'temp/32920210728104804.txt'
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\AphiaFull.mod" -f json --stdout parse "temp/43920210728104822.txt"
+b'[\r\n  {\r\n    "Author": [\r\n      "Brockes, J.,"\r\n    ],\r\n    "Year": [\r\n      "1994."\r\n    ],\r\n    "Title": [\r\n      "Muscle escapes from a jelly mould."\r\n    ],\r\n    "Journal": [\r\n      "Curr. Biol."\r\n    ],\r\n    "Volume": [\r\n      "4"\r\n    ],\r\n    "Pagination": [\r\n      "11: 1030-1032."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Error while removing
+[WinError 2] The system cannot find the file specified: 'temp/32920210728104804.txt'
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\AphiaFull.mod" -f json --stdout parse "temp/57920210728104851.txt"
+b'[\r\n  {\r\n    "Author": [\r\n      "Krohling, W., & Zalmon, I. R."\r\n    ],\r\n    "Year": [\r\n      "2008."\r\n    ],\r\n    "Title": [\r\n      "Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the Rio de Janeiro State, Brazil."\r\n    ],\r\n    "Journal": [\r\n      "Brazilian Archives of Biology and Technology"\r\n    ],\r\n    "Volume": [\r\n      "51:"\r\n    ],\r\n    "Pagination": [\r\n      "213-221."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Error while removing
+[WinError 2] The system cannot find the file specified: 'temp/32920210728104803.txt'
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\all_examples.mod" -f json --stdout parse "temp/58220210728105134.txt"
+b'[\r\n  {\r\n    "Authors": [\r\n      "Krohling, W., & Zalmon, I. R."\r\n    ],\r\n    "Year": [\r\n      "2008."\r\n    ],\r\n    "Title": [\r\n      "Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the Rio de Janeiro State, Brazil. Brazilian"\r\n    ],\r\n    "Series": [\r\n      "Archives of Biology and Technology"\r\n    ],\r\n    "Suffix": [\r\n      "51: 213-221."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Error while removing
+[WinError 2] The system cannot find the file specified: 'temp/57920210728104851.txt'
+request: <Request 'http://127.0.0.1:5000/parse/string' [POST]>
+anystyle -P "model\data\models\available_models\aphia.mod" -f json --stdout parse "temp/57520210728105146.txt"
+b'[\r\n  {\r\n    "Authors": [\r\n      "Krohling, W., & Zalmon, I. R."\r\n    ],\r\n    "Year": [\r\n      "2008."\r\n    ],\r\n    "Title": [\r\n      "Epibenthic colonization on an artificial reef in a stressed environment off the north coast of the"\r\n    ],\r\n    "Book": [\r\n      "Rio de Janeiro State, Brazil. Brazilian Archives of Biology and Technology"\r\n    ],\r\n    "Suffix": [\r\n      "51: 213-221."\r\n    ],\r\n    "type": null\r\n  }\r\n]\r\n'
+Error while removing
+[WinError 2] The system cannot find the file specified: 'temp/57920210728104851.txt'
