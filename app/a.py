@@ -74,14 +74,31 @@ def get_contact_page():
 
 def get_all_models():
   #file_paths = list(model_folder_path.rglob("*.mod"))
-  #print(os.listdir())
-  #print(file_paths)
+  #log(os.listdir())
+  #log(file_paths)
   #res = []
   file_names = os.listdir(model_folder_path)
  # for file_name in file_names:
    # res.append(str(file_name).split("/")[len(str(file_name).split("/")) - 1])
   return file_names
 
+def log(txt):
+  with open("log.txt", "a+") as logfile:
+    logfile.write(txt)
+    logfile.write("\n")
+
+@api.route('/getlog', methods=['GET'])
+def get_log():
+  # TODO disable or secure this if any sensitive info is logged
+  with open("log.txt", "r") as logfile:
+    txt = logfile.readlines()
+
+  textarea = f"<textarea style='width: 90vw; height: 90vh;'>"
+  for line in txt:
+    textarea += line + "\n"
+  textarea += "</textarea>"
+
+  return textarea
 
 
 def index_error(err_code, message):
@@ -114,9 +131,6 @@ form_input_name: the name of the form input to get data from
 """
 # Pass the request object,  the extension and 
 def save_data_to_tmp(request, ext,  form_input_name=None):
-  print("request")
-
-  print(request)
   # To ensure no duplicate filenames, use headers to create a filename
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
@@ -129,7 +143,6 @@ def save_data(request, filename, form_input_name=None):
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
     data = request.form.get(form_input_name, request.form["citationstring"])
-    print(data)
     file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
     file_from_string.close()
@@ -145,7 +158,7 @@ CITATION_STRING_CONST = "citationstring"
 def retrain():
   model_name = request.form["model"]
 
-  print(model_name)
+  log("Retraining " + model_name)
 
   model_path = select_model(model_name)
   model_data_path = model_path + ".xml"
@@ -156,13 +169,13 @@ def retrain():
 
   keys = request.form.keys()
   for key in keys:
-    print(key)
+    log(key)
     # Don't add model-name to XML
     if key == "model-name":
       continue
 
     value = request.form[key]
-    print("  " + value)
+    log("  " + value)
 
     
     ET.SubElement(sequence, key).text = value
@@ -179,7 +192,7 @@ def process_pdf_file(file_path):
   path = ''.join(path) + "/"
   file_name = file_path.split("/")[len(file_path.split("/")) - 1]
   #subprocess.check_output('python3 ./hello.py', shell=True)
-  print('python3 grobid_client/grobid_parsing.py' + ' ' + path + ' ' +
+  log('python3 grobid_client/grobid_parsing.py' + ' ' + path + ' ' +
                                  file_name)
   data = subprocess.check_output('python3 grobid_parsing.py' + ' ' + path + ' ' +
                                  file_name, shell=True)
@@ -189,11 +202,11 @@ def parse_pdf():
   #model_name = request.headers.get("model-name")
   input_filename = request.files['file'].filename
   input_filepath = GROBID_PATH + input_filename
-  # a print statement
+  # a log statement
   file = request.files['file']
   file.save(input_filename)
   data = process_pdf_file(input_filepath)#, model_name)
-  print("data: " + str(data))
+  log("data: " + str(data))
   return_data = {
     "data": data,
     "original_strings": ""
@@ -271,14 +284,14 @@ def parse_csv():
   input_filename_csv = input_filename
   input_filename = input_filename_csv.replace("csv", "txt")
 
-  print(request.headers.get("model-name"))
-  print(request.headers.get("Single-Column"))
+  log(request.headers.get("model-name"))
+  log(request.headers.get("Single-Column"))
 
   ignore_firstline = header_boolean(request.headers.get("Ignore-Firstline"), default=True)
   single_column = header_int(request.headers.get("Single-Column"), default=-1)
 
-  print(ignore_firstline)
-  print(single_column)
+  log(ignore_firstline)
+  log(single_column)
 
   with open(input_filename_csv, "r", encoding="utf-8", newline='\n') as original_csv:
     csv_reader = csv.reader(original_csv, delimiter=",")
@@ -313,7 +326,7 @@ def parse_csv():
 @api.route('/parse/string', methods=['POST'])
 def parse_str():
   input_filename = save_data_to_tmp(request, "txt")
-  print("here is te request: " + str(request))
+  log("request: " + str(request))
   model = get_model_from_request(request)
   return parse_to_citations(input_filename, model)
 
@@ -380,10 +393,10 @@ def remove_files(files):
   try:
     for file in files:
       os.remove(file)
-    print("Removed")
+    log("Removed")
   except Exception as e:
-    print("Error while removing")
-    print(e)
+    log("Error while removing")
+    log(e)
 
 
 def header_boolean(header_value, default):
@@ -459,7 +472,7 @@ def process_file(filepath, model_name=False):
     model = next(model_folder_path.rglob(model_name + ".mod"))
   
   model = select_model(model_name)
-  print('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"')
+  log('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"')
   data = subprocess.check_output('anystyle -P "' + model + '" -f json --stdout parse "' + filepath + '"', stderr=subprocess.STDOUT, shell=True)
   data = json.loads(data)
 
@@ -541,7 +554,7 @@ def train_model(model_path, data_path, overwrite, input_filenames=None):
     return index_success(200, "Successfully updated model. Thank you for your contribution. Output: " + output)
   # On any crash, recover backup
   except Exception as e:
-    print("Error during training")
+    log("Error during training")
     # Remove the new model if it exists
     if os.path.exists(model_path):
       os.remove(model_path)
@@ -570,7 +583,7 @@ Headers:
 def train():
   model_name = request.headers.get("model-name")
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
-  print(overwrite)
+  log(overwrite)
 
   input_filenames = []
 
@@ -590,7 +603,7 @@ Training from CSV
 @api.route('/train-csv', methods=['POST'])
 def train_from_csv():
   input_csv = save_data_to_tmp(request, "csv")
-  print(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
+  log(subprocess.check_output(f'python3 "{model_folder_path}/csv2xml.py" "{input_csv}" "{data_path}"', shell=True))
 """
 
 # Serve CSS until it's handled by something else
