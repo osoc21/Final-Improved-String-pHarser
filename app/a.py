@@ -19,7 +19,7 @@ from flask.helpers import send_from_directory
 api = Flask(__name__)
 
 SWAGGER_URL = '/swagger'
-API_URL = '/static/swagger.json'
+API_URL = '/static/Fish-0.1-swagger.yaml'
 SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL,
