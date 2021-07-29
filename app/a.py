@@ -380,7 +380,7 @@ def parse_str():
   return parse_to_citations(input_filename, model)
 
 
- """
+"""
 parse_to_citations: parses a file containing citations, one citation per line.
 
 The input file should be converted into a ref or txt file before calling this function, see below
