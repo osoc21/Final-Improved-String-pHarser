@@ -667,7 +667,7 @@ def train():
   # Lowercase and secure model name
   model_name = model_name.lower().rstrip(".mod")
 
-  model_path = model_folder + "/data/models/" + model_name + ".mod"
+  model_path = select_model(model_name)
   data_path = model_path + ".xml"
   
   save_data(request, data_path)
