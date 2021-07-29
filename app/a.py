@@ -40,9 +40,9 @@ def get_homepage():
     if request.method == "GET":
         return render_template("index.html", models=get_all_models())
 
-    # If a post gets done to /, assume the user wants to parse, so call /parse
+    # If a post gets done to /, assume the user wants to parse, so call /parse_str()
     elif request.method == "POST":
-        return parse()
+        return parse_str()
 
 """
 get_all_models: get every .mod file in model_folder_path, and remove the dirname
@@ -144,7 +144,8 @@ def save_data(request, filename, form_input_name=None):
   if len(request.files) <= 0:
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
-    data = request.form.get(form_input_name, request.form["citationstring"])
+    data = request.values.get(form_input_name) or request.data or request.values.get("citationstring")
+    data = str(data)  # convert in case of Bytes. Don't convert request.data in line above, since it might give a str('None')
     file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
     file_from_string.close()
