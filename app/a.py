@@ -144,7 +144,7 @@ def save_data(request, filename, form_input_name=None):
   if len(request.files) <= 0:
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
-    data = request.values.get(form_input_name) or request.data or request.values.get("citationstring")
+    data = request.values.get(form_input_name) or request.data or request.values.get(CITATION_STRING_CONST)
     data = str(data)  # convert in case of Bytes. Don't convert request.data in line above, since it might give a str('None')
     file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
