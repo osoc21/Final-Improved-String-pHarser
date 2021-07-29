@@ -19,7 +19,7 @@ from flask.helpers import send_from_directory
 api = Flask(__name__)
 
 SWAGGER_URL = '/swagger'
-API_URL = '/static/swagger.json'
+API_URL = '/static/Fish-0.1-swagger.yaml'
 SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL,
@@ -33,19 +33,6 @@ temporary_folder = "temp/"
 model_folder = "model/data/models/available_models"
 GROBID_PATH = "grobid_client/"
 
-"""
-User Interface to manually upload a file, or (later on) manually correct output.
-
-URL: domain.com
-METHOD: GET
-
----
-
-An alias for /parse
-URL: domain.com
-METHOD: POST
-
-"""
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
     models = list(model_folder_path.rglob("*.mod"))
@@ -57,39 +44,38 @@ def get_homepage():
     elif request.method == "POST":
         return parse()
 
+"""
+get_all_models: get every .mod file in model_folder_path, and remove the dirname
 
-@api.route('/about/', methods=['GET'])
-def get_about_page():
-    return render_template("about.html")
-
-
-@api.route('/tos/', methods=['GET'])
-def get_tos_page():
-    return render_template("termsofuse.html")
-
-
-@api.route('/contact/', methods=['GET'])
-def get_contact_page():
-    return render_template("contact.html")
-
+Example:
+  Usage: models = get_all_models()
+  Return: [str("aphia.mod"), str("all_examples.mod"))]
+"""
 def get_all_models():
   file_paths = list(model_folder_path.rglob("*.mod"))
-  #log(os.listdir())
-  #log(file_paths)
-  #res = []
-  #file_names = os.listdir(model_folder_path)
-  #for file_name in file_names:
-   # res.append(str(file_name).split("/")[len(str(file_name).split("/")) - 1])
   file_names = []
   for path in file_paths:
     file_names.append(os.path.basename(path))
   return file_names
 
+"""
+log: save string into log.txt, which can be read using /getlog. Mainly used for debugging.
+
+Arguments:
+  > txt: string to be written to file
+
+Example:
+  Usage: log("Debug info: " + debug)
+  Return: None
+"""
 def log(txt):
   with open("log.txt", "a+") as logfile:
     logfile.write(str(txt))
     logfile.write("\n")
 
+"""
+/getlog: show the contents of log.txt in a <textarea>
+"""
 @api.route('/getlog', methods=['GET'])
 def get_log():
   # TODO disable or secure this if any sensitive info is logged
@@ -104,14 +90,19 @@ def get_log():
 
   return textarea
 
+"""
+index_success/index_error: return the HTTP Status Code with the message
 
-def index_error(err_code, message):
-  data = {"response": message, "type": "error"}
-  if request.values.get('from-website', default=False):
-    return render_template('index.html', data=data, models=get_all_models()), err_code, {'Content-Type': 'text/html'}
-  else:
-    return data, err_code
+Depending on whether the request comes from the website or not, it'll be sent in JSON or in HTML 
 
+Arguments:
+  > success_code/error_code: HTTP status code (https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+  > success_msg/error_msg: custom text to be added to the response
+
+Example:
+  Usage: index_success(200, "OK")  ||  index_error(403, "Forbidden")
+  Return: Flask response
+"""
 def index_success(success_code, success_msg):
   data = {"response": success_msg, "type": "success"}
 
@@ -119,6 +110,13 @@ def index_success(success_code, success_msg):
     return render_template('index.html', data=data, models=get_all_models()), success_code, {'Content-Type': 'text/html'}
   else:
     return data, success_code
+
+def index_error(error_code, error_msg):
+  data = {"response": error_msg, "type": "error"}
+  if request.values.get('from-website', default=False):
+    return render_template('index.html', data=data, models=get_all_models()), error_code, {'Content-Type': 'text/html'}
+  else:
+    return data, error_code
 
 def remove_in_background(filenames):
   if type(filenames) == str:

@@ -1,0 +1,212 @@
+swagger: '2.0'
+info:
+  description: Parse citation references into JSON!
+  version: '0.1'
+  title: Final Improved String pHarser
+host: fish.osoc.be
+
+paths:
+  /parse-string:
+    post:
+      consumes:
+        - text/plain
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/header-model-name'
+        - $ref: '#/parameters/parse-input'
+      responses:
+        '200':
+          $ref: '#/responses/parse-result'
+        '422':
+          $ref: '#/responses/parse-no-input'
+          
+  /parse-csv:
+    post:
+      consumes:
+        - application/csv
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/header-model-name'
+        - $ref: '#/parameters/parse-input'
+        - $ref: '#/parameters/header-csv-firstline'
+        - $ref: '#/parameters/header-csv-single-column'
+      responses:
+        '200':
+          $ref: '#/responses/parse-result'
+        '422':
+          $ref: '#/responses/parse-no-input'
+          
+  /parse-file:
+    post:
+      description: 'Upload a file containing reference strings to be parsed. Allowed formats: .txt, .csv, .pdf (See app/example data for examples)'
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+        - text/html
+      parameters:
+        - $ref: '#/parameters/header-model-name'
+        - $ref: '#/parameters/parse-input'
+        - $ref: '#/parameters/header-csv-firstline'
+        - $ref: '#/parameters/header-csv-single-column'
+      responses:
+        '200':
+          $ref: '#/responses/parse-result'
+        '422':
+          $ref: '#/responses/parse-no-input'
+          
+  /train-xml:
+    post:
+      consumes:
+        - application/xml
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/header-model-name'
+        - name: overwrite
+          in: header
+          description: Whether to overwrite the existing model if it exists. Keys are subject to change depending on the model, and can thus be customized at will whilst (re)training.
+          required: false
+          type: string
+          x-example: True
+          default: False
+        - $ref: '#/parameters/training-input'
+      responses:
+        '200':
+          description: OK
+        '409':
+          description: The model already exists, and Overwrite is not set to True
+  /retrain:
+    post:
+      description: Called from the front-end after parsing. Retrains the used model with corrections passed in body. Keys are subject to change depending on the model, and can thus be customized at will whilst (re)training.
+      consumes:
+        - application/xml
+      parameters:
+        - $ref: '#/parameters/header-model-name'
+        - $ref: '#/parameters/training-input'
+      responses:
+        200:
+          description: OK
+          
+definitions:
+  Parsed-Citation-Data:
+    properties:
+      Authors:
+        type: array
+        items:
+          type: string
+      Year:
+        type: array
+        items:
+          type: string
+      Title:
+        type: array
+        items:
+          type: string
+      Book:
+        type: array
+        items:
+          type: string
+      Series:
+        type: array
+        items:
+          type: string
+      Publisher:
+        type: array
+        items:
+          type: string
+      City:
+        type: array
+        items:
+          type: string
+      Volume:
+        type: array
+        items:
+          type: string
+      Issue:
+        type: array
+        items:
+          type: string
+      Pagination:
+        type: array
+        items:
+          type: string
+      DOI:
+        type: array
+        items:
+          type: string
+     
+     
+      
+  Parse-Endpoint-Return-Value:
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Parsed-Citation-Data'
+      model:
+        type: string
+      original_strings:
+        type: array
+        items:
+          type: string
+          
+
+# The parameters are usually made to be as universal as possible.
+# They should work with <form> POSTs, ajax requests etc.
+parameters:
+  header-model-name:
+    name: model-name
+    in: header
+    description: The name of the model to be used whilst parsing. If not specified, default to model with newest creation time.
+    required: False
+    type: string
+    x-example: aphia.mod
+  
+  parse-input:
+    in: body
+    name: body
+    required: False
+    schema:
+      type: string
+  
+  
+  header-csv-firstline:
+    name: Ignore-Firstline
+    in: header
+    description: When parsing a CSV file, ignore the first line (which usually has the header). Defaults to True.
+    required: False
+    type: string
+    x-example: True
+          
+  header-csv-single-column:
+    name: Single-Column
+    in: header
+    description: When parsing a CSV file, only use the data in a specific column, defined by index.
+    required: False
+    type: string
+    x-example: 0
+  
+  training-input:
+    in: body
+    name: body
+    required: true
+    schema:
+      xml:
+        name: dataset
+        wrapped: true
+      items:
+        allOf:
+        - $ref: '#/definitions/Parsed-Citation-Data'
+        xml:
+          name: sequence
+
+responses:
+  parse-result:
+    description: JSON response with the original strings, the name of the model used, and Anystyle's output.
+    schema:
+      $ref: '#/definitions/Parse-Endpoint-Return-Value'
+  parse-no-input:
+    description: No data has been passed in the body.
