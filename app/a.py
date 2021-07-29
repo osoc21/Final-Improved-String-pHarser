@@ -144,7 +144,7 @@ def save_data(request, filename, form_input_name=None):
   if len(request.files) <= 0:
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
-    data = str(request.values.get(form_input_name, request.data))
+    data = request.values.get(form_input_name, request.data.decode("utf-8"))
     file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
     file_from_string.close()
