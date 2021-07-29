@@ -120,18 +120,33 @@ def index_error(error_code, error_msg):
   else:
     return data, error_code
 
+
+"""
+remove_in_background: pass (a) filename(s) to remove (a) file(s), without blocking
+
+Arguments:
+  > filenames: a str, or a list(str(),str()) of file paths
+
+Example:
+  Usage: remove_in_background(["temp/test.txt", temp_file_path])  ||  remove_in_background("test.xml")
+  Return: None
+"""
 def remove_in_background(filenames):
   if type(filenames) == str:
     filenames = [filenames] 
   threading.Thread(target=remove_files, args=(filenames,)).start()  # , is important
 
 """
-save_data_to_file uses its parameters to save the POST data to a random filename,
-returning the filename afterwards
+save_data_to_tmp: save the POST data to a random filename in the temp folder, returning the filename afterwards
 
-request: the request object
-ext: the extension to save the file as
-form_input_name: the name of the form input to get data from
+Arguments:
+  > request: the request object
+  > ext: the extension to save the file as
+  > form_input_name: the name of the form input/header to get data from, if not default
+
+Example:
+  Usage: save_data_to_tmp(request, "txt")  ||  save_data_to_tmp(request, "csv", "csv_file")
+  Return: str(path_to_randomly_named_file)
 """
 # Pass the request object,  the extension and 
 def save_data_to_tmp(request, ext,  form_input_name=CITATION_STRING_CONST):
@@ -141,6 +156,20 @@ def save_data_to_tmp(request, ext,  form_input_name=CITATION_STRING_CONST):
   temp_filename = temporary_folder + request.headers.get("content-length") + time.strftime("%Y%m%d%H%M%S") + "." + ext
   return save_data(request, temp_filename, form_input_name)
 
+"""
+save_data: save the POST data to a specified path+filename, returning the filename afterwards
+
+This is used internally by save_data_to_tmp
+
+Arguments:
+  > request: the request object
+  > filename: path of file to save to
+  > form_input_name: the name of the form input/header to get data from, if not default
+
+Example:
+  Usage: save_data(request, "model/aphia.xml")  ||  save_data_to_tmp(request, "datastore/test.csv", "csv_file")
+  Return: str(path_to_file)
+"""
 def save_data(request, filename, form_input_name=None):
   # If a string was directly given (no direct file upload), save it to a file
   if len(request.files) <= 0:
@@ -156,8 +185,13 @@ def save_data(request, filename, form_input_name=None):
     request.files['file'].save(filename)
   return filename
 
+"""
+/retrain: add (manually corrected) citation data to the training set and retrain the model
 
-# Currently only support from form
+This requires the model to have an XML file next to it with its training set
+This is done automatically when a model is created using /train, but it might not be the case with externally made models
+"""
+# Only tested from front-end <form>
 @api.route('/retrain', methods=['POST'])
 def retrain():
   model_name = request.values.get("model-name") or request.headers.get("model-name")
