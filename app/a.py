@@ -58,11 +58,24 @@ def get_all_models():
     file_names.append(os.path.basename(path))
   return file_names
 
+"""
+log: save string into log.txt, which can be read using /getlog. Mainly used for debugging.
+
+Arguments:
+  > txt: string to be written to file
+
+Example:
+  Usage: log("Debug info: " + debug)
+  Return: None
+"""
 def log(txt):
   with open("log.txt", "a+") as logfile:
     logfile.write(str(txt))
     logfile.write("\n")
 
+"""
+/getlog: show the contents of log.txt in a <textarea>
+"""
 @api.route('/getlog', methods=['GET'])
 def get_log():
   # TODO disable or secure this if any sensitive info is logged
@@ -77,14 +90,19 @@ def get_log():
 
   return textarea
 
+"""
+index_success/index_error: return the HTTP Status Code with the message
 
-def index_error(err_code, message):
-  data = {"response": message, "type": "error"}
-  if request.values.get('from-website', default=False):
-    return render_template('index.html', data=data, models=get_all_models()), err_code, {'Content-Type': 'text/html'}
-  else:
-    return data, err_code
+Depending on whether the request comes from the website or not, it'll be sent in JSON or in HTML 
 
+Arguments:
+  > success_code/error_code: HTTP status code (https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+  > success_msg/error_msg: custom text to be added to the response
+
+Example:
+  Usage: index_success(200, "OK")  ||  index_error(403, "Forbidden")
+  Return: Flask response
+"""
 def index_success(success_code, success_msg):
   data = {"response": success_msg, "type": "success"}
 
@@ -92,6 +110,13 @@ def index_success(success_code, success_msg):
     return render_template('index.html', data=data, models=get_all_models()), success_code, {'Content-Type': 'text/html'}
   else:
     return data, success_code
+
+def index_error(error_code, error_msg):
+  data = {"response": error_msg, "type": "error"}
+  if request.values.get('from-website', default=False):
+    return render_template('index.html', data=data, models=get_all_models()), error_code, {'Content-Type': 'text/html'}
+  else:
+    return data, error_code
 
 def remove_in_background(filenames):
   if type(filenames) == str:
