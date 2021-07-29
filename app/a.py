@@ -132,7 +132,7 @@ ext: the extension to save the file as
 form_input_name: the name of the form input to get data from
 """
 # Pass the request object,  the extension and 
-def save_data_to_tmp(request, ext,  form_input_name=None):
+def save_data_to_tmp(request, ext,  form_input_name=CITATION_STRING_CONST):
   # To ensure no duplicate filenames, use headers to create a filename
   # This will give issues if two people upload two files with the exact same size on the exact same second
   # This should do the trick for now, but it can be changed later on to a more heavyweight solution if need be
@@ -144,8 +144,7 @@ def save_data(request, filename, form_input_name=None):
   if len(request.files) <= 0:
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
-    data = request.values.get(form_input_name) or request.data or request.values.get("citationstring")
-    data = str(data)  # convert in case of Bytes. Don't convert request.data in line above, since it might give a str('None')
+    data = str(request.values.get(form_input_name, request.data))
     file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
     file_from_string.close()
