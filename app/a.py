@@ -639,6 +639,7 @@ def train_model(model_path, data_path, overwrite, input_filenames=None):
   # On any crash, recover backup
   except Exception as e:
     log("Error during training")
+    log(e)
     # Remove the new model if it exists
     if os.path.exists(model_path):
       os.remove(model_path)
