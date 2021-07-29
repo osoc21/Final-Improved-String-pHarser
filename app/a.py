@@ -224,17 +224,17 @@ def retrain():
 
   return train_model(model_path, model_data_path, overwrite=True)
 
-"""TODO
-process_pdf_file: {general description of what it does in one line}
+"""
+process_pdf_file: processes a PDF file. The PDF file is processed by calling the GROBID client
 
 This is used internally by parse_pdf
 
 Arguments:
-  > file_path: {what data of what type should be passed to the function}
+  > file_path: the path of the pdf (str). Including the full name of the PDF file
 
 Example:
-  Usage: {example of how one would use this in code}
-  Return: {example of what output would be returned, and of what type (str, list...)}
+  Usage: process_pdf_file(file_path)
+  Return: JSON(data_returned_by_grobid)
 """
 def process_pdf_file(file_path):
   path = os.path.dirname(file_path)
@@ -247,17 +247,17 @@ def process_pdf_file(file_path):
                                  file_name, shell=True)
   return data
 
-"""TODO
-parse_pdf: {general description of what it does in one line}
+"""
+parse_pdf: parse a PDF file. The citations in a PDF file are found using process_pdf_file. The response
+contains the parsed citations and the original found citations.
 
 This is used internally by /parse-file
 
-Arguments:
-  > file_path: {what data of what type should be passed to the function}
+Arguments: -
 
 Example:
-  Usage: {example of how one would use this in code}
-  Return: {example of what output would be returned, and of what type (str, list...)}
+  Usage: parse_pdf()
+  Return: {data=JSON(process_pdf_file(input_filepath)), original_strings=original found citations}
 """
 def parse_pdf():
   #model_name = request.headers.get("model-name")
