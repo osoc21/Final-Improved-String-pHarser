@@ -18,43 +18,36 @@ file_path = args.file_path
 
 if not os.path.exists(file_path):
     os.makedirs(file_path)
-<<<<<<< HEAD:example.py
-
-#os.chdir("grobid_client_python/temp/")
-# read all the pdf's inside the directory created and put the parsed string there
-client = GrobidClient(config_path="C:\stage\Final-Improved-String-pHarser\grobid_client\config.json")
-=======
 # put input file in the directory
 GROBID_PATH = "/app/grobid_client/"
 os.chdir(GROBID_PATH)
 
 # read all the pdf's inside the directory created and put the parsed string there
 client = GrobidClient(config_path="config.json")
->>>>>>> c3f8e11c89e87a83326427f47f0dc73fb866a547:app/grobid_parsing.py
-# calls their service
+# calls the GROBID service
 client.process("processReferences", GROBID_PATH, output=GROBID_PATH,
                consolidate_citations=True, teiCoordinates=True, force=True)
 
 pdf_file = os.path.basename(file_name).rstrip(".pdf")
 
+# Function to print within docker
 def log_to_docker(msg):
     print(msg, file=sys.stderr)
 
+
 log_to_docker(os.listdir(GROBID_PATH))
 log_to_docker(os.getcwd())
-
 log_to_docker(str(next(pathlib.Path("/").rglob("*tei.xml"))))
-# retrive file with parsed citation (and convert html to JSON)
-<<<<<<< HEAD:example.py
-with open(file_path + file_name.split(".")[0] + ".tei.xml", 'r', encoding="utf8") as file:
-=======
+
+# retrive file with parsed citation (and convert xml to JSON)
+# TODO: find .tei.xml output file here and convert from xml to JSON
 with open(GROBID_PATH + f"{pdf_file}.tei.xml", 'r', encoding="utf8") as file:
->>>>>>> c3f8e11c89e87a83326427f47f0dc73fb866a547:app/grobid_parsing.py
     obj = file.read()
-    #json_data = json.dumps(xmltodict.parse(obj))
+    json_data = json.dumps(xmltodict.parse(obj))
 # clear directory
 print(obj)
 
+# Remove all deleted files
 for filename in os.listdir(file_path):
     out_path = os.path.join(file_path, filename)
     try:
@@ -64,6 +57,8 @@ for filename in os.listdir(file_path):
             shutil.rmtree(out_path)
     except Exception as e:
         print('Failed to delete %s. Reason: %s' % (out_path, e))
+
+# TODO: render this response in the front-end possibly with response.html template
 f.write(obj)
 # print(process_file('/home/felix/test1.pdf'))
 
