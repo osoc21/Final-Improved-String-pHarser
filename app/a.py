@@ -32,6 +32,8 @@ api.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 temporary_folder = "temp/"
 model_folder = "model/data/models/available_models"
 GROBID_PATH = "grobid_client/"
+CITATION_STRING_CONST = "citationstring"
+
 
 @api.route('/', methods=['GET', 'POST'])
 def get_homepage():
@@ -145,6 +147,7 @@ def save_data(request, filename, form_input_name=None):
     # https://stackoverflow.com/a/42154919  https://stackoverflow.com/a/16966147
     # Either get from form or from request data
     data = request.values.get(form_input_name, request.data.decode("utf-8"))
+    log(data)
     file_from_string = open(filename, "w", encoding="utf-8", newline='\n')
     file_from_string.write(data)
     file_from_string.close()
@@ -154,7 +157,6 @@ def save_data(request, filename, form_input_name=None):
   return filename
 
 
-CITATION_STRING_CONST = "citationstring"
 # Currently only support from form
 @api.route('/retrain', methods=['POST'])
 def retrain():
