@@ -615,6 +615,7 @@ Example:
 
 """
 def train_model(model_path, data_path, overwrite, input_filenames=None):
+  model_path = str(model_path)  # Make sure it's not a POSIXPath/WindowsPath
   if input_filenames is None:
     input_filenames = []
   model_exists = os.path.exists(model_path)
@@ -658,14 +659,11 @@ def train_model(model_path, data_path, overwrite, input_filenames=None):
 @api.route('/train-xml', methods=['POST'])
 @api.route('/train/xml', methods=['POST'])
 def train():
-  model_name = request.headers.get("model-name")
+  model_name = get_model_from_request()
   overwrite = header_boolean(request.headers.get("overwrite"), default=False)
   log(overwrite)
 
   input_filenames = []
-
-  # Lowercase and secure model name
-  model_name = model_name.lower().rstrip(".mod")
 
   model_path = select_model(model_name)
   data_path = model_path + ".xml"
