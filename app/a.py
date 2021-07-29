@@ -224,7 +224,18 @@ def retrain():
 
   return train_model(model_path, model_data_path, overwrite=True)
 
+"""TODO
+process_pdf_file: {general description of what it does in one line}
 
+This is used internally by parse_pdf
+
+Arguments:
+  > file_path: {what data of what type should be passed to the function}
+
+Example:
+  Usage: {example of how one would use this in code}
+  Return: {example of what output would be returned, and of what type (str, list...)}
+"""
 def process_pdf_file(file_path):
   path = os.path.dirname(file_path)
   path = ''.join(path) + "/"
@@ -236,6 +247,18 @@ def process_pdf_file(file_path):
                                  file_name, shell=True)
   return data
 
+"""TODO
+parse_pdf: {general description of what it does in one line}
+
+This is used internally by /parse-file
+
+Arguments:
+  > file_path: {what data of what type should be passed to the function}
+
+Example:
+  Usage: {example of how one would use this in code}
+  Return: {example of what output would be returned, and of what type (str, list...)}
+"""
 def parse_pdf():
   #model_name = request.headers.get("model-name")
   input_filename = request.files['file'].filename
